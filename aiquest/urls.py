@@ -15,9 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from machine_learning import views
+from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.machine)
+    path('machine/', include('machine_learning.urls')),
+    path('deep/', include('deep_learning.urls'))
 ]
