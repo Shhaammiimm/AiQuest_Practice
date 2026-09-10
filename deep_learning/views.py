@@ -5,7 +5,7 @@ from django.shortcuts import render
 # Create your views here.
 
 def index(request):
-    return HttpResponse("Hello, this is the deep learning view.")
+    return render(request, 'deep_learning/index.html')
 
-def say_hello(request):
-    return HttpResponse("Hello from the deep learning app!")
+def view(request):
+    return render(request, 'deep_learning/view.html')

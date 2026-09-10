@@ -4,7 +4,15 @@ from django.shortcuts import render
 # Create your views here.
 
 def index(request):
-    return HttpResponse("Hello, this is the machine learning view.")
+    course = "Machine Learning"
+    days = 21
+    students_info = {'name': ['A', 'B', 'C'], 'age': [20, 21, 22], 'city': ['X', 'Y', 'Z']}
+    prepared_data = {
+        'course': course,
+        'days': days,
+        'students_info': students_info
+    }
+    return render(request, 'machine_learning/index.html', context=prepared_data)
 
-def say_hello(request):
-    return HttpResponse("Hello from the machine learning app!")
+def view(request):
+    return render(request, 'machine_learning/view.html')

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h1>We Will Train {{course}} for {{days}} Days</h1>
+    <h2>{{ course | upper }}</h2>
+    <h2>{{ days | floatformat:"2" }}</h2>
+    {% if days > 20 %}
+        <h2>Somoy Onek Kom</h2>
+    {%endif%}
+
+    {% for student in students_info.name %}
+        <p>{{ student }}</p>
+    {% endfor %}
+    <img src="{% static 'images/aiquest.jpg' %}" alt="AI Quest Logo">
+</body>
+</html>
