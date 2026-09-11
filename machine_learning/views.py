@@ -1,6 +1,8 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 
+from .models import MachineLearningModel
+
 # Create your views here.
 
 def index(request):
@@ -16,3 +18,11 @@ def index(request):
 
 def view(request):
     return render(request, 'machine_learning/view.html')
+
+def create(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        MachineLearningModel.objects.create(name=name, description=description)
+    machine_list = MachineLearningModel.objects.all()
+    return render(request, 'machine_learning/create.html', {'machine_list': machine_list})
