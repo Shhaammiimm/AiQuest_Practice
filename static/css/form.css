@@ -1,0 +1,31 @@
+form{
+    border: 5px solid #1b8651;
+    padding: 20px;
+}
+
+label{
+    font-size: 18px;
+    /* display: block; */
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #1b8651;
+}
+
+input[type="text"], input[type="email"]{
+    width: 20%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #b72828;
+    border-radius: 4px;
+    background-color: rgb(221, 222, 215);
+}
+
+#id_text_area{
+    width: 40%;
+    height: 50px;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #b72828;
+    border-radius: 4px;
+    background-color: rgb(221, 222, 215);
+}

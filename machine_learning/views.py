@@ -4,7 +4,7 @@ from django.shortcuts import render
 from . forms import MyForm
 
 from .models import MachineLearningModel
-
+from django.contrib.auth.forms import UserCreationForm
 # Create your views here.
 
 def index(request):
@@ -30,6 +30,21 @@ def create(request):
     return render(request, 'machine_learning/create.html', {'machine_list': machine_list})
 
 def show(request):
-    forms_data = MyForm()
-    forms_data.order_fields(['first_name', 'last_name', 'email'])
+    if request.method == 'POST':
+        forms_data = MyForm(request.POST)
+        print(forms_data)
+        print(forms_data.is_valid())
+        print(forms_data.cleaned_data)
+    else:
+        forms_data = MyForm()
     return render(request, 'machine_learning/show.html', {'forms_data': forms_data})
+
+def registration(request):
+    if request.method == 'POST':
+        forms_data = UserCreationForm(request.POST)
+        if forms_data.is_valid():
+            forms_data.save()
+            # return HttpResponse("Registration successful!")
+    else:
+        forms_data = UserCreationForm()
+    return render(request, 'machine_learning/registration.html', {'forms_data': forms_data})
