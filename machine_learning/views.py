@@ -31,10 +31,12 @@ def create(request):
 
 def show(request):
     if request.method == 'POST':
-        forms_data = MyForm(request.POST)
+        forms_data = MyForm(request.POST, request.FILES)
         print(forms_data)
         print(forms_data.is_valid())
         print(forms_data.cleaned_data)
+        if forms_data.is_valid():
+            forms_data.save()
     else:
         forms_data = MyForm()
     return render(request, 'machine_learning/show.html', {'forms_data': forms_data})

@@ -1,17 +1,42 @@
 
-
 from django import forms
+from .models import UserInfo
 
 
-class MyForm(forms.Form):
-    first_name = forms.CharField(label='Enter Your First Name', max_length=100)
-    last_name = forms.CharField(label='Enter Your Last Name', max_length=100)
-    email = forms.EmailField(label='Enter Your Email', initial="shamim@gmail.com", disabled=True)
-    password = forms.CharField(label='Enter Your Password', widget=forms.PasswordInput)
-    repassword = forms.CharField(label='Enter Your Password Again', widget=forms.PasswordInput)
-    text_area = forms.CharField(label='Enter Your Text', widget=forms.Textarea)
-    file_field = forms.FileField(label='Upload Your File')
-    checkbox = forms.BooleanField(label='Accept Terms and Conditions', widget=forms.CheckboxInput, required=True)
+class MyForm(forms.ModelForm):
+
+    repassword = forms.CharField(
+        label='Enter Your Password Again',
+        widget=forms.PasswordInput
+    )
+
+    class Meta:
+        model = UserInfo
+        fields = [
+            'first_name',
+            'last_name',
+            'email',
+            'password',
+            'repassword',
+            'text_area',
+            'file_field',
+            'checkbox',
+        ]
+
+        labels = {
+            'first_name': 'Enter Your First Name',
+            'last_name': 'Enter Your Last Name',
+            'email': 'Enter Your Email',
+            'password': 'Enter Your Password',
+            'text_area': 'Enter Your Text',
+            'file_field': 'Upload Your File',
+            'checkbox': 'Accept Terms and Conditions',
+        }
+
+        widgets = {
+            'password': forms.PasswordInput(),
+            'text_area': forms.Textarea(),
+        }
 
 
     def clean(self):
@@ -23,5 +48,7 @@ class MyForm(forms.Form):
             raise forms.ValidationError(
                 "Password and Re-entered Password do not match."
             )
+
+        return cleaned_data
 
 

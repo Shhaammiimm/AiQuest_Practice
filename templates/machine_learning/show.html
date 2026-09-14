@@ -8,7 +8,7 @@
     <title>Form</title>
 </head>
 <body>
-    <form method="post"> {% csrf_token %}
+    <form method="post" enctype="multipart/form-data"> {% csrf_token %}
       <!-- {% for data in forms_data %}
         {{data.label_tag}} {{data}}<br>
       {%endfor%} -->
