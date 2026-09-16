@@ -1,0 +1,50 @@
+
+{% block content %}
+<h2>Monthly Expense</h2>
+
+<div id="days-grid"></div>
+
+<h3 style="margin-top: 30px;">Day Details</h3>
+<div id="detail-grid"></div>
+
+<link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator.min.css" rel="stylesheet">
+<script src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
+
+<script>
+const year = new Date().getFullYear();
+const month = new Date().getMonth() + 1;
+
+const daysTable = new Tabulator("#days-grid", {
+    ajaxURL: "{% url 'expense:monthly_summary_api' %}",
+    ajaxParams: { year: year, month: month },
+    layout: "fitColumns",
+    columns: [
+        { title: "Day", field: "day", width: 80, sorter: "number" },
+        { title: "Date", field: "date" },
+        { title: "Total", field: "total", sorter: "number", formatter: "money", formatterParams: { symbol: "৳ " } },
+        { title: "Items", field: "count", sorter: "number" },
+    ],
+});
+
+const detailTable = new Tabulator("#detail-grid", {
+    layout: "fitColumns",
+    placeholder: "একটা দিন সিলেক্ট করো উপরের table থেকে",
+    columns: [
+        { title: "Item Name", field: "name" },
+        { title: "Price", field: "price", formatter: "money", formatterParams: { symbol: "৳ " } },
+        { title: "Quantity", field: "quantity" },
+        { title: "Total", field: "total", formatter: "money", formatterParams: { symbol: "৳ " } },
+    ],
+});
+
+daysTable.on("rowClick", function(e, row) {
+    const rowData = row.getData();
+    if (rowData.count === 0) return;
+
+    const url = `/expense/api/day/${year}/${month}/${rowData.day}/`;
+    detailTable.setData(url);
+    daysTable.deselectRow();
+    row.select();
+});
+</script>
+{% endblock %}

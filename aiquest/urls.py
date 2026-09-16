@@ -19,5 +19,6 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('machine/', include('machine_learning.urls')),
-    path('deep/', include('deep_learning.urls'))
+    path('deep/', include('deep_learning.urls')),
+    path('expense/', include('expense.urls'))
 ]

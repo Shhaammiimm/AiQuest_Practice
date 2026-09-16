@@ -1,0 +1,32 @@
+
+{% block content %}
+<h2>Add Item</h2>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-success">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">{{ form.name.label }} {{ form.name }}</div>
+    <div class="mb-3">{{ form.price.label }} {{ form.price }}</div>
+    <div class="mb-3">{{ form.quantity.label }} {{ form.quantity }}</div>
+    <div class="mb-3">{{ form.date.label }} {{ form.date }}</div>
+
+    <p><strong>Total: <span id="total-preview">0.00</span></strong></p>
+
+    <button type="submit" class="btn btn-primary">Add Item</button>
+</form>
+
+<script>
+function updateTotal() {
+    const price = parseFloat(document.getElementById('id_price').value) || 0;
+    const qty = parseFloat(document.getElementById('id_quantity').value) || 0;
+    document.getElementById('total-preview').textContent = (price * qty).toFixed(2);
+}
+document.getElementById('id_price').addEventListener('input', updateTotal);
+document.getElementById('id_quantity').addEventListener('input', updateTotal);
+</script>
+{% endblock %}
