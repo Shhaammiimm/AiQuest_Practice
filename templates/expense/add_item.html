@@ -1,32 +1,85 @@
+{% load static %}
 
 {% block content %}
-<h2>Add Item</h2>
 
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-success">{{ message }}</div>
-  {% endfor %}
-{% endif %}
+<div class="expense-page">
 
-<form method="post">
-    {% csrf_token %}
-    <div class="mb-3">{{ form.name.label }} {{ form.name }}</div>
-    <div class="mb-3">{{ form.price.label }} {{ form.price }}</div>
-    <div class="mb-3">{{ form.quantity.label }} {{ form.quantity }}</div>
-    <div class="mb-3">{{ form.date.label }} {{ form.date }}</div>
+    <div class="expense-card">
 
-    <p><strong>Total: <span id="total-preview">0.00</span></strong></p>
+        <div class="form-header">
+            <h2>Add Expense</h2>
+            <p>Enter the details of your expense.</p>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Add Item</button>
-</form>
+        <form method="post">
+            {% csrf_token %}
 
+            <div class="form-grid">
+
+                {% for field in form %}
+                    <div class="form-group {% if field.name == 'description' %}full-width{% endif %}">
+
+                        <label for="{{ field.id_for_label }}">
+                            {% if field.field.required %}
+                                <span class="required-marker">››</span>
+                            {% endif %}
+                            {{ field.label }}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.errors %}
+                            <div class="field-error">
+                                {{ field.errors }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+                {% endfor %}
+
+            </div>
+
+            <!-- Total -->
+            <div class="total-box">
+                <span>Total Amount</span>
+                <strong>৳ <span id="total-preview">0.00</span></strong>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-add">
+                    Add Expense
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<link rel="stylesheet" href="{% static 'css/add_item.css' %}">
 <script>
+
 function updateTotal() {
-    const price = parseFloat(document.getElementById('id_price').value) || 0;
-    const qty = parseFloat(document.getElementById('id_quantity').value) || 0;
-    document.getElementById('total-preview').textContent = (price * qty).toFixed(2);
+
+    const price =
+        parseFloat(document.getElementById('id_price').value) || 0;
+
+    const quantity =
+        parseFloat(document.getElementById('id_quantity').value) || 0;
+
+    document.getElementById('total-preview').textContent =
+        (price * quantity).toFixed(2);
 }
-document.getElementById('id_price').addEventListener('input', updateTotal);
-document.getElementById('id_quantity').addEventListener('input', updateTotal);
+
+document.getElementById('id_price')
+    .addEventListener('input', updateTotal);
+
+document.getElementById('id_quantity')
+    .addEventListener('input', updateTotal);
+
+updateTotal();
+
 </script>
+
 {% endblock %}

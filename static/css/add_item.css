@@ -1,0 +1,140 @@
+
+
+    .expense-page {
+        max-width: 850px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .expense-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 30px;
+    }
+
+    .form-header {
+        margin-bottom: 28px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 18px;
+    }
+
+    .form-header h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+    }
+
+    .form-header p {
+        margin: 6px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        margin-bottom: 7px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .required-marker {
+        font-size: 18px;
+        font-weight: 700;
+        margin-right: 3px;
+        color: #168d9d;
+    }
+
+    .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: #6b7280;
+        box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.12);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+    }
+
+    .field-error {
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .total-box {
+        margin-top: 25px;
+        padding: 16px 18px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 7px;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .total-box span {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .total-box strong {
+        font-size: 20px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 22px;
+    }
+
+    .btn-add {
+        padding: 10px 22px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    @media (max-width: 650px) {
+
+        .expense-card {
+            padding: 20px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .full-width {
+            grid-column: auto;
+        }
+
+    }
+
+</style>
