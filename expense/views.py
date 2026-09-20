@@ -6,19 +6,95 @@ from django.http import JsonResponse
 from django.db.models import Sum, Count, F, DecimalField, ExpressionWrapper
 from .models import Item
 from .forms import ItemForm
-
+from django.shortcuts import get_object_or_404
 
 def add_item(request):
     if request.method == 'POST':
         form = ItemForm(request.POST)
         if form.is_valid():
-            form.save()
+            item = form.save()
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Item added successfully!',
+                    'item': {
+                        'id': item.id,
+                        'name': item.name,
+                        'price': float(item.price),
+                        'quantity': float(item.quantity),
+                        'location': item.location,
+                        'total': float(item.total),
+                        'description': item.description,
+                        'date': item.date.strftime('%Y-%m-%d'),
+                    }
+                })
             messages.success(request, "Item added successfully!")
             return redirect('expense:add_item')
     else:
         form = ItemForm()
+    today_items = Item.objects.filter(
+        date=date.today()
+    ).order_by('-created_at')    
 
-    return render(request, 'expense/add_item.html', {'form': form})
+    return render(request, 'expense/add_item.html', {'form': form, 'today_items': today_items})
+
+def edit_item(request, item_id):
+
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid request method.'
+        }, status=405)
+
+    item = get_object_or_404(Item, id=item_id)
+
+    form = ItemForm(
+        request.POST,
+        instance=item
+    )
+
+    if form.is_valid():
+
+        item = form.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Expense updated successfully!',
+
+            'item': {
+                'id': item.id,
+                'name': item.name,
+                'price': float(item.price),
+                'quantity': float(item.quantity),
+                'location': item.location or '',
+                'total': float(item.price * item.quantity),
+                'date': item.date.strftime('%Y-%m-%d'),
+                'description': item.description or '',
+            }
+        })
+
+    return JsonResponse({
+        'success': False,
+        'errors': form.errors
+    }, status=400)
+
+def delete_item(request, item_id):
+
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid request method.'
+        }, status=405)
+
+    item = get_object_or_404(Item, id=item_id)
+
+    item.delete()
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Expense deleted successfully!'
+    })
 
 
 def monthly_list_page(request):
@@ -55,14 +131,24 @@ def monthly_summary_api(request):
 
 
 def day_detail_api(request, year, month, day):
-    items = Item.objects.filter(date__year=year, date__month=month, date__day=day)
+
+    items = Item.objects.filter(
+        date__year=year,
+        date__month=month,
+        date__day=day
+    )
+
     data = [
         {
+            'id': item.id,
             'name': item.name,
             'price': float(item.price),
             'quantity': float(item.quantity),
+            'location': item.location or '',
+            'description': item.description or '',
             'total': float(item.total),
         }
         for item in items
     ]
+
     return JsonResponse(data, safe=False)

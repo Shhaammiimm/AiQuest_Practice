@@ -1,0 +1,243 @@
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background: #f4f6f8;
+    color: #222;
+}
+
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.expense-page {
+    width: 100%;
+    min-height: 100vh;
+    padding: 25px 35px;
+}
+
+.expense-card {
+    width: 100%;
+    background: #ffffff;
+
+    padding: 25px 30px;
+
+    border-radius: 8px;
+}
+
+
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+
+.toolbar {
+    width: 100%;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+
+    border-bottom: 1px solid #e2e2e2;
+}
+
+.toolbar-left h2 {
+    margin: 0;
+
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.toolbar-right a {
+    color: #333;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    padding: 7px 12px;
+
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.toolbar-right a:hover {
+    background: #f3f3f3;
+}
+
+
+/* =========================================================
+   FILTER
+   ========================================================= */
+
+.filter-section {
+    display: flex;
+    align-items: end;
+
+    gap: 15px;
+
+    margin-bottom: 22px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.filter-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+}
+
+.filter-group select {
+    width: 150px;
+    height: 36px;
+
+    padding: 6px 9px;
+
+    border: 1px solid #ccc;
+    border-radius: 5px;
+
+    background: #fff;
+
+    font-size: 13px;
+
+    outline: none;
+
+    cursor: pointer;
+}
+
+.filter-group select:focus {
+    border-color: #198754;
+
+    box-shadow:
+        0 0 0 2px
+        rgba(25, 135, 84, 0.10);
+}
+
+
+/* =========================================================
+   EXPENSE LAYOUT
+   ========================================================= */
+
+.expense-layout {
+    display: grid;
+
+    grid-template-columns: 30% 70%;
+
+    gap: 20px;
+
+    width: 100%;
+}
+
+.left-panel,
+.right-panel {
+    min-width: 0;
+}
+
+/* =========================================================
+   DAY SUMMARY
+   ========================================================= */
+
+.day-summary {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+
+    margin-bottom: 12px;
+
+    font-size: 20px;
+    color: #555;
+}
+
+.day-summary strong {
+    color: #198754;
+    font-weight: 700;
+}
+/* =========================================================
+   PANEL HEADER
+   ========================================================= */
+
+.panel-header {
+    margin-bottom: 10px;
+}
+
+.panel-header h3 {
+    margin: 0;
+
+    font-size: 16px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   TABULATOR
+   ========================================================= */
+
+#days-grid,
+#detail-grid {
+    width: 100%;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .expense-page {
+        padding: 20px;
+    }
+
+    .expense-card {
+        padding: 22px;
+    }
+
+    .expense-layout {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .expense-page {
+        padding: 15px;
+    }
+
+    .expense-card {
+        padding: 18px;
+    }
+
+    .filter-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-group select {
+        width: 180px;
+    }
+
+}
