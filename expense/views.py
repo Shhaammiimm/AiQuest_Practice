@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Sum, Count, F, DecimalField, ExpressionWrapper
 from .models import Item
-from .forms import ItemForm
+from .forms import ItemForm, LendForm
 from django.shortcuts import get_object_or_404
 
 
@@ -171,3 +171,29 @@ def day_detail_api(request, year, month, day):
     ]
 
     return JsonResponse(data, safe=False)
+
+
+def add_lend(request):
+    if request.method == 'POST':
+        form = LendForm(request.POST)
+        if form.is_valid():
+            lend = form.save()
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Lend record added successfully!',
+                    'lend': {
+                        'id': lend.id,
+                        'name': lend.name,
+                        'amount': float(lend.amount),
+                        'lend_date': lend.lend_date.strftime('%Y-%m-%d'),
+                        'return_date': lend.return_date.strftime('%Y-%m-%d') if lend.return_date else None,
+                        'description': lend.description or '',
+                    }
+                })
+            messages.success(request, "Lend record added successfully!")
+            return redirect('expense:add_lend')
+    else:
+        form = LendForm()
+    return render(request, 'expense/add.html', {'form': form})

@@ -1,0 +1,51 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Lend</title>
+    <link rel="stylesheet" href="{% static 'css/add_item.css' %}">
+</head>
+<body>
+    <div class="expense-page">
+        <div class="expense-card lend-page-card">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <h2>Add Lend</h2>
+                </div>
+                <div class="toolbar-right">
+                    <a href="{% url 'expense:add_item' %}">Add Expense →</a>
+                </div>
+            </div>
+
+            <section class="expense-form-section">
+                <div class="form-header">
+                    <h3>Enter the lend details</h3>
+                    <button type="submit" form="lend-form" class="btn-add">
+                        Save Lend
+                    </button>
+                </div>
+
+                <form method="post" id="lend-form">
+                    {% csrf_token %}
+                    <div class="form-grid">
+                        {% for field in form %}
+                            <div class="form-group
+                                {% if field.name == 'description' %}full-width{% endif %}
+                                {% if field.field.required %}required-field{% endif %}">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="field-error">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</body>
+</html>
