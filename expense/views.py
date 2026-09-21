@@ -8,6 +8,20 @@ from .models import Item
 from .forms import ItemForm
 from django.shortcuts import get_object_or_404
 
+
+def serialize_item(item):
+    return {
+        'id': item.id,
+        'name': item.name,
+        'price': float(item.price),
+        'quantity': float(item.quantity),
+        'location': item.location or '',
+        'date': item.date.strftime('%Y-%m-%d'),
+        'description': item.description or '',
+        'total': float(item.total),
+    }
+
+
 def add_item(request):
     if request.method == 'POST':
         form = ItemForm(request.POST)
@@ -37,7 +51,11 @@ def add_item(request):
         date=date.today()
     ).order_by('-created_at')    
 
-    return render(request, 'expense/add_item.html', {'form': form, 'today_items': today_items})
+    return render(request, 'expense/add_item.html', {
+        'form': form,
+        'today_items': today_items,
+        'today_items_data': [serialize_item(item) for item in today_items],
+    })
 
 def edit_item(request, item_id):
 
@@ -147,6 +165,7 @@ def day_detail_api(request, year, month, day):
             'location': item.location or '',
             'description': item.description or '',
             'total': float(item.total),
+            'date': item.date.strftime('%Y-%m-%d'),
         }
         for item in items
     ]

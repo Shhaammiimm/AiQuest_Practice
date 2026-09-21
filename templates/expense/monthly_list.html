@@ -2,578 +2,79 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Monthly Expense</title>
-
-    <link rel="stylesheet"
-          href="{% static 'css/tabulator.min.css' %}">
-
-    <link rel="stylesheet"
-          href="{% static 'css/monthly_list.css' %}">
-
+    <link rel="stylesheet" href="{% static 'css/tabulator.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/monthly_list.css' %}">
+    <link rel="stylesheet" href="{% static 'css/add_item.css' %}">
 </head>
-
 <body>
-
-<div class="expense-page">
-
-    <div class="expense-card">
-
-
-        <!-- =====================================================
-             TOOLBAR
-             ===================================================== -->
-
-        <div class="toolbar">
-
-            <div class="toolbar-left">
-                <h2>Monthly Expense</h2>
+    <div class="expense-page">
+        <div class="expense-card" id="monthly-expense-page"
+             data-summary-url="{% url 'expense:monthly_summary_api' %}"
+             data-detail-url-template="{% url 'expense:day_detail_api' 0 0 0 %}"
+             data-edit-url-template="{% url 'expense:edit_item' 0 %}"
+             data-delete-url-template="{% url 'expense:delete_item' 0 %}">
+            <div class="toolbar">
+                <div class="toolbar-left"><h2>Monthly Expense</h2></div>
+                <div class="toolbar-right"><a href="{% url 'expense:add_item' %}">Add Expense →</a></div>
             </div>
 
-            <div class="toolbar-right">
-                <a href="{% url 'expense:add_item' %}">
-                    Add Expense →
-                </a>
-            </div>
-
-        </div>
-
-
-        <!-- =====================================================
-             FILTER
-             ===================================================== -->
-
-        <div class="filter-section">
-
-            <div class="filter-group">
-
-                <label for="year-filter">
-                    Year
-                </label>
-
-                <select id="year-filter"></select>
-
-            </div>
-
-
-            <div class="filter-group">
-
-                <label for="month-filter">
-                    Month
-                </label>
-
-                <select id="month-filter">
-
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
-
-                </select>
-
-            </div>
-
-        </div>
-
-
-        <!-- =====================================================
-             MONTHLY CONTENT
-             ===================================================== -->
-
-        <div class="expense-layout">
-
-
-            <!-- ==================== LEFT ==================== -->
-
-            <div class="left-panel">
-
-                <div class="panel-header">
-                    <h3 id="monthly-heading">September 2026 Expense Summary</h3>
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label for="year-filter">Year</label>
+                    <select id="year-filter"></select>
                 </div>
-
-                <div id="days-grid"></div>
-
+                <div class="filter-group">
+                    <label for="month-filter">Month</label>
+                    <select id="month-filter">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
             </div>
 
-
-            <!-- ==================== RIGHT ==================== -->
-          <div class="right-panel">
-
-            <div class="panel-header">
-                <h3 id="day-heading">5 September 2026 Expense Details</h3>
+            <div class="expense-layout">
+                <div class="left-panel">
+                    <div class="panel-header"><h3 id="monthly-heading">Monthly Overview</h3></div>
+                    <div id="days-grid"></div>
+                </div>
+                <div class="right-panel">
+                    <div class="panel-header"><h3 id="day-heading">Daily Expenses</h3></div>
+                    <div class="day-summary">
+                        <div class="day-summary-stat">
+                            <span class="day-summary-label">Date</span>
+                            <strong id="selected-day-date">-</strong>
+                        </div>
+                        <div class="day-summary-stat">
+                            <span class="day-summary-label">Items purchased</span>
+                            <strong id="selected-day-items">0</strong>
+                        </div>
+                        <div class="day-summary-stat">
+                            <span class="day-summary-label">Total spent</span>
+                            <strong id="selected-day-total">৳0.00</strong>
+                        </div>
+                    </div>
+                    <div id="detail-grid"></div>
+                </div>
             </div>
-
-            <div class="day-summary">
-                <span>
-                    Items Purchased:
-                    <strong id="selected-day-items">0</strong>
-                </span>
-
-                <span>
-                    Total Cost:
-                    <strong id="selected-day-total">৳0.00</strong>
-                </span>
-            </div>
-
-            <div id="detail-grid"></div>
-
         </div>
-
-<script src="{% static 'js/tabulator.min.js' %}"></script>
-
-
-<script>
-
-const today = new Date();
-
-let selectedYear = today.getFullYear();
-let selectedMonth = today.getMonth() + 1;
-
-
-/* =========================================================
-   YEAR DROPDOWN
-   ========================================================= */
-
-const yearFilter =
-    document.getElementById("year-filter");
-
-const monthFilter =
-    document.getElementById("month-filter");
-
-
-for (
-    let year = today.getFullYear();
-    year >= 2020;
-    year--
-) {
-
-    const option =
-        document.createElement("option");
-
-    option.value = year;
-    option.textContent = year;
-
-    yearFilter.appendChild(option);
-}
-
-
-yearFilter.value = selectedYear;
-monthFilter.value = selectedMonth;
-
-
-/* =========================================================
-   DAYS TABLE
-   ========================================================= */
-
-const daysTable = new Tabulator(
-    "#days-grid",
-    {
-
-        layout: "fitColumns",
-
-        height: "600px",
-
-        selectableRows: 1,
-
-        placeholder: "No days available.",
-
-        columns: [
-
-            {
-                title: "Day",
-                field: "day",
-                width: 70,
-                hozAlign: "center",
-                sorter: "number"
-            },
-
-            {
-                title: "Day Name",
-                field: "day_name"
-            },
-
-            {
-                title: "Total",
-                field: "total",
-                hozAlign: "right",
-
-                formatter: "money",
-
-                formatterParams: {
-                    symbol: "৳ ",
-                    precision: 2
-                }
-            }
-
-        ]
-
-    }
-);
-
-
-/* =========================================================
-   DETAIL TABLE
-   ========================================================= */
-
-const detailTable = new Tabulator(
-    "#detail-grid",
-    {
-
-        layout: "fitColumns",
-
-        height: "600px",
-
-        placeholder: "No expenses added for this day.",
-
-        columns: [
-
-            {
-                title: "Item",
-                field: "name"
-            },
-
-            {
-                title: "Price",
-                field: "price",
-                hozAlign: "right",
-
-                formatter: "money",
-
-                formatterParams: {
-                    symbol: "৳ ",
-                    precision: 2
-                }
-            },
-
-            {
-                title: "Quantity",
-                field: "quantity",
-                hozAlign: "right"
-            },
-
-            {
-                title: "Location",
-                field: "location"
-            },
-
-            {
-                title: "Description",
-                field: "description"
-            },
-
-            {
-                title: "Total",
-                field: "total",
-                hozAlign: "right",
-
-                formatter: "money",
-
-                formatterParams: {
-                    symbol: "৳ ",
-                    precision: 2
-                }
-            }
-
-        ]
-
-    }
-);
-
-/* =========================================================
-   UPDATE HEADINGS
-   ========================================================= */
-function getOrdinal(day) {
-    if (day >= 11 && day <= 13) {
-        return `${day}th`;
-    }
-
-    switch (day % 10) {
-        case 1:
-            return `${day}st`;
-        case 2:
-            return `${day}nd`;
-        case 3:
-            return `${day}rd`;
-        default:
-            return `${day}th`;
-    }
-}
-
-
-function updateHeadings(year, month, day) {
-
-    const monthName = new Date(
-        year,
-        month - 1,
-        1
-    ).toLocaleDateString("en-US", {
-        month: "long"
-    });
-
-    document.getElementById("monthly-heading").textContent =
-        `${monthName} ${year} Expense Summary`;
-
-    document.getElementById("day-heading").textContent =
-        `${getOrdinal(day)} ${monthName} ${year} Expense Details`;
-}
-
-/* =========================================================
-   DAY NAME
-   ========================================================= */
-
-function getDayName(year, month, day) {
-
-    const date =
-        new Date(year, month - 1, day);
-
-    return date.toLocaleDateString(
-        "en-US",
-        {
-            weekday: "long"
-        }
-    );
-}
-
-
-/* =========================================================
-   LOAD MONTH
-   ========================================================= */
-
-async function loadMonth(
-    year,
-    month
-) {
-
-    try {
-
-        const response =
-            await fetch(
-                `{% url 'expense:monthly_summary_api' %}?year=${year}&month=${month}`
-            );
-
-        const data =
-            await response.json();
-
-
-        /* Add day name */
-
-        const formattedData =
-            data.map(item => ({
-
-                ...item,
-
-                day_name:
-                    getDayName(
-                        year,
-                        month,
-                        item.day
-                    )
-
-            }));
-
-
-        daysTable.setData(
-            formattedData
-        );
-
-
-        /*
-         * Select current day when
-         * current month is selected.
-         *
-         * Otherwise select day 1.
-         */
-
-        let defaultDay = 1;
-
-        if (
-            year === today.getFullYear() &&
-            month === today.getMonth() + 1
-        ) {
-
-            defaultDay =
-                today.getDate();
-
-        }
-
-
-        const defaultRow =
-            daysTable.getRows().find(
-                row =>
-                    row.getData().day === defaultDay
-            );
-
-
-        if (defaultRow) {
-
-            const rowData = defaultRow.getData();
-
-            document.getElementById(
-                "selected-day-total"
-            ).textContent =
-                `৳${Number(rowData.total || 0).toFixed(2)}`;
-
-            document.getElementById(
-                "selected-day-items"
-            ).textContent =
-                rowData.count || 0;
-
-            defaultRow.select();
-            
-            updateHeadings(
-                year,
-                month,
-                defaultDay
-            );
-
-            loadDayDetails(
-                year,
-                month,
-                defaultDay
-            );
-        }
-
-    }
-    catch (error) {
-
-        console.error(
-            "Error loading monthly summary:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   LOAD DAY DETAILS
-   ========================================================= */
-
-async function loadDayDetails(
-    year,
-    month,
-    day
-) {
-
-    try {
-
-        const url =
-            `/expense/api/day/${year}/${month}/${day}/`;
-
-        await detailTable.setData(url);
-
-    }
-    catch (error) {
-
-        console.error(
-            "Error loading day details:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   ROW CLICK
-   ========================================================= */
-
-daysTable.on("rowClick", function(e, row) {
-
-    const rowData = row.getData();
-
-
-    // Update selected day's summary
-
-    document.getElementById(
-        "selected-day-total"
-    ).textContent =
-        `৳${Number(rowData.total || 0).toFixed(2)}`;
-
-
-    document.getElementById(
-        "selected-day-items"
-    ).textContent =
-        rowData.count || 0;
-
-
-    // Load selected day's expenses
-
-    loadDayDetails(
-        selectedYear,
-        selectedMonth,
-        rowData.day
-    );
-    updateHeadings(
-        selectedYear,
-        selectedMonth,
-        rowData.day
-    );
-
-});
-
-
-/* =========================================================
-   FILTER CHANGE
-   ========================================================= */
-
-function applyFilter() {
-
-    selectedYear =
-        parseInt(
-            yearFilter.value
-        );
-
-    selectedMonth =
-        parseInt(
-            monthFilter.value
-        );
-
-    loadMonth(
-        selectedYear,
-        selectedMonth
-    );
-
-}
-
-
-yearFilter.addEventListener(
-    "change",
-    applyFilter
-);
-
-monthFilter.addEventListener(
-    "change",
-    applyFilter
-);
-
-
-/* =========================================================
-   INITIAL LOAD
-   ========================================================= */
-
-loadMonth(
-    selectedYear,
-    selectedMonth,
-);
-
-</script>
-
+    </div>
+
+    {% include 'expense/partials/edit_expense_modal.html' %}
+    <script src="{% static 'js/tabulator.min.js' %}"></script>
+    <script src="{% static 'js/expense/monthly_list.js' %}"></script>
 </body>
-
 </html>

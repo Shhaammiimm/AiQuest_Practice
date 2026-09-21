@@ -153,6 +153,15 @@ body {
 .left-panel,
 .right-panel {
     min-width: 0;
+
+    padding: 18px;
+
+    border: 1px solid #cbd2d8;
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    box-shadow: 0 2px 8px rgba(35, 45, 55, 0.06);
 }
 
 /* =========================================================
@@ -162,16 +171,51 @@ body {
 .day-summary {
     display: flex;
     align-items: center;
-    gap: 25px;
+    gap: 12px;
 
     margin-bottom: 12px;
 
-    font-size: 20px;
-    color: #555;
+    padding: 12px 14px;
+
+    border: 1px solid #e2e2e2;
+    border-radius: 6px;
+
+    background: #f8f9fa;
 }
 
-.day-summary strong {
+.day-summary-stat {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+
+    min-width: 0;
+
+    padding: 0 12px;
+
+    border-right: 1px solid #e2e2e2;
+}
+
+.day-summary-stat:first-child {
+    padding-left: 0;
+}
+
+.day-summary-stat:last-child {
+    padding-right: 0;
+    border-right: none;
+}
+
+.day-summary-label {
+    color: #6c757d;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.day-summary-stat strong {
     color: #198754;
+    font-size: 16px;
     font-weight: 700;
 }
 /* =========================================================
@@ -179,12 +223,21 @@ body {
    ========================================================= */
 
 .panel-header {
-    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+
+    min-height: 28px;
+    margin-bottom: 14px;
+
+    padding-bottom: 10px;
+
+    border-bottom: 1px solid #e7eaed;
 }
 
 .panel-header h3 {
     margin: 0;
 
+    color: #2f3a40;
     font-size: 16px;
     font-weight: 600;
 }
@@ -197,6 +250,23 @@ body {
 #days-grid,
 #detail-grid {
     width: 100%;
+}
+
+#detail-grid .tabulator-cell {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.45;
+}
+
+#days-grid .tabulator-row,
+#detail-grid .tabulator-row {
+    border-bottom: 1px solid #d5dbe0;
+}
+
+#detail-grid .tabulator-cell textarea {
+    max-height: 72px;
+    overflow-y: auto;
+    resize: vertical;
 }
 
 
@@ -238,6 +308,25 @@ body {
 
     .filter-group select {
         width: 180px;
+    }
+
+    .day-summary {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .day-summary-stat,
+    .day-summary-stat:first-child,
+    .day-summary-stat:last-child {
+        padding: 0 0 10px;
+        border-right: none;
+        border-bottom: 1px solid #e2e2e2;
+    }
+
+    .day-summary-stat:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
     }
 
 }

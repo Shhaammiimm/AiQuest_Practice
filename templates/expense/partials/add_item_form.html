@@ -1,0 +1,30 @@
+<div class="expense-form-section">
+    <div class="form-header">
+        <h3>Enter the details of your expense</h3>
+        <button type="submit" form="expense-form" class="btn-add">Add Expense</button>
+    </div>
+
+    <form method="post" id="expense-form">
+        {% csrf_token %}
+        <div class="form-grid">
+            {% for field in form %}
+                <div class="form-group
+                    {% if field.name == 'description' %}full-width{% endif %}
+                    {% if field.field.required %}required-field{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-error">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+
+                {% if field.name == 'date' %}
+                    <div class="form-group">
+                        <label for="total-preview">Total Amount</label>
+                        <div class="total-field">৳ <span id="total-preview">0.00</span></div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </form>
+</div>

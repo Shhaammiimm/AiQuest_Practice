@@ -1,0 +1,26 @@
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Expense</h3>
+            <button type="button" class="modal-close" data-close-edit aria-label="Close">×</button>
+        </div>
+
+        <form id="edit-form">
+            {% csrf_token %}
+            <input type="hidden" id="edit-id">
+            <div class="edit-grid">
+                <div class="form-group"><label for="edit-name">Name</label><input type="text" id="edit-name" required></div>
+                <div class="form-group"><label for="edit-price">Price</label><input type="number" id="edit-price" step="0.01" required></div>
+                <div class="form-group"><label for="edit-quantity">Quantity</label><input type="number" id="edit-quantity" step="0.01" required></div>
+                <div class="form-group"><label for="edit-location">Location</label><input type="text" id="edit-location"></div>
+                <div class="form-group"><label for="edit-date">Date</label><input type="date" id="edit-date" required></div>
+                <div class="form-group"><label for="edit-total">Total Amount</label><div class="total-field">৳ <span id="edit-total">0.00</span></div></div>
+                <div class="form-group full-width"><label for="edit-description">Description</label><textarea id="edit-description" rows="2"></textarea></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" data-close-edit>Cancel</button>
+                <button type="submit" class="btn-save">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>

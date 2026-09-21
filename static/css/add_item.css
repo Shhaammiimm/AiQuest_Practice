@@ -384,10 +384,30 @@ body {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: 12px;
+
+    min-height: 28px;
+    margin-bottom: 14px;
+
+    padding-bottom: 10px;
+
+    border-bottom: 1px solid #e7eaed;
+}
+
+.today-expenses-section {
+    min-width: 0;
+
+    padding: 18px;
+
+    border: 1px solid #cbd2d8;
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    box-shadow: 0 2px 8px rgba(35, 45, 55, 0.06);
 }
 
 .today-title {
+    color: #2f3a40;
     font-size: 20px;
     font-weight: 600;
 }
@@ -413,6 +433,22 @@ body {
 #today-expense-grid {
 
     width: 100%;
+}
+
+#today-expense-grid .tabulator-cell {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.45;
+}
+
+#today-expense-grid .tabulator-row {
+    border-bottom: 1px solid #d5dbe0;
+}
+
+#today-expense-grid .tabulator-cell textarea {
+    max-height: 72px;
+    overflow-y: auto;
+    resize: vertical;
 }
 
 #today-expense-grid .tabulator-placeholder {
@@ -466,6 +502,10 @@ body {
     .form-group.full-width {
 
         grid-column: auto;
+    }
+
+    .form-group textarea {
+        width: 100%;
     }
 
 
