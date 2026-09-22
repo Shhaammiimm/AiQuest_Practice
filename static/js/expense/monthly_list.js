@@ -6,6 +6,8 @@
     const monthFilter = document.getElementById('month-filter');
     const editModal = document.getElementById('edit-modal');
     const editForm = document.getElementById('edit-form');
+    const monthlyAddModal = document.getElementById('monthly-add-modal');
+    const monthlyAddForm = document.getElementById('monthly-add-form');
     const today = new Date();
     let selectedYear = today.getFullYear();
     let selectedMonth = today.getMonth() + 1;
@@ -41,6 +43,24 @@
         const price = parseFloat(document.getElementById('edit-price').value) || 0;
         const quantity = parseFloat(document.getElementById('edit-quantity').value) || 0;
         document.getElementById('edit-total').textContent = (price * quantity).toFixed(2);
+    }
+
+    function updateMonthlyAddTotal() {
+        const price = parseFloat(document.getElementById('monthly-add-price').value) || 0;
+        const quantity = parseFloat(document.getElementById('monthly-add-quantity').value) || 0;
+        document.querySelector('#monthly-add-total span').textContent = (price * quantity).toFixed(2);
+    }
+
+    function openMonthlyAddModal() {
+        monthlyAddForm.reset();
+        document.getElementById('monthly-add-quantity').value = 1;
+        document.getElementById('monthly-add-date').value = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+        monthlyAddModal.style.display = 'flex';
+        updateMonthlyAddTotal();
+    }
+
+    function closeMonthlyAddModal() {
+        monthlyAddModal.style.display = 'none';
     }
 
     function openEditModal(row) {
@@ -176,6 +196,22 @@
         }
     });
 
+    monthlyAddForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        try {
+            const data = await submitRequest(page.dataset.addUrl, new FormData(monthlyAddForm));
+            if (!data.success) {
+                console.log(data.errors);
+                return;
+            }
+            closeMonthlyAddModal();
+            await loadMonth();
+        } catch (error) {
+            console.error('Error adding daily expense:', error);
+        }
+    });
+
     daysTable.on('rowClick', async (event, row) => {
         selectedDay = row.getData().day;
         updateDaySummary(row.getData());
@@ -197,6 +233,12 @@
 
     document.getElementById('edit-price').addEventListener('input', updateEditTotal);
     document.getElementById('edit-quantity').addEventListener('input', updateEditTotal);
+    document.getElementById('monthly-add-price').addEventListener('input', updateMonthlyAddTotal);
+    document.getElementById('monthly-add-quantity').addEventListener('input', updateMonthlyAddTotal);
+    document.getElementById('open-monthly-add').addEventListener('click', openMonthlyAddModal);
+    document.querySelectorAll('[data-close-monthly-add]').forEach((button) => {
+        button.addEventListener('click', closeMonthlyAddModal);
+    });
     document.querySelectorAll('[data-close-edit]').forEach((button) => {
         button.addEventListener('click', closeEditModal);
     });

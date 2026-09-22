@@ -242,6 +242,15 @@ body {
     font-weight: 600;
 }
 
+.monthly-add-button {
+    margin-left: auto;
+    padding: 7px 14px;
+}
+
+.monthly-add-content {
+    max-width: 760px;
+}
+
 
 /* =========================================================
    TABULATOR

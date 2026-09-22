@@ -15,6 +15,7 @@
         <div class="expense-card" id="monthly-expense-page"
              data-summary-url="{% url 'expense:monthly_summary_api' %}"
              data-detail-url-template="{% url 'expense:day_detail_api' 0 0 0 %}"
+             data-add-url="{% url 'expense:add_item' %}"
              data-edit-url-template="{% url 'expense:edit_item' 0 %}"
              data-delete-url-template="{% url 'expense:delete_item' 0 %}">
             <div class="toolbar">
@@ -52,7 +53,10 @@
                     <div id="days-grid"></div>
                 </div>
                 <div class="right-panel">
-                    <div class="panel-header"><h3 id="day-heading">Daily Expenses</h3></div>
+                    <div class="panel-header">
+                        <h3 id="day-heading">Daily Expenses</h3>
+                        <button type="button" class="btn-add monthly-add-button" id="open-monthly-add">Add Expense</button>
+                    </div>
                     <div class="day-summary">
                         <div class="day-summary-stat">
                             <span class="day-summary-label">Date</span>
@@ -74,6 +78,7 @@
     </div>
 
     {% include 'expense/partials/edit_expense_modal.html' %}
+    {% include 'expense/partials/monthly_add_expense_modal.html' %}
     <script src="{% static 'js/tabulator.min.js' %}"></script>
     <script src="{% static 'js/expense/monthly_list.js' %}"></script>
 </body>

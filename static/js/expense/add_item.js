@@ -5,8 +5,8 @@
     const expenseForm = document.getElementById('expense-form');
     const editForm = document.getElementById('edit-form');
     const editModal = document.getElementById('edit-modal');
-    const todayExpenses = JSON.parse(
-        document.getElementById('today-expenses-data').textContent
+    const recentExpenses = JSON.parse(
+        document.getElementById('recent-expenses-data').textContent
     );
     let editingRow = null;
 
@@ -24,32 +24,31 @@
             (getNumber('edit-price') * getNumber('edit-quantity')).toFixed(2);
     }
 
+    function getTodayDate() {
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${now.getFullYear()}-${month}-${day}`;
+    }
+
     function updateTodayTotal(rows) {
+        const today = getTodayDate();
         const total = rows.reduce((sum, item) => {
-            const itemTotal = Number(item.total);
-            const calculatedTotal = (Number(item.price) || 0) * (Number(item.quantity) || 0);
-            return sum + (Number.isFinite(itemTotal) ? itemTotal : calculatedTotal);
+            if (item.date !== today) return sum;
+            return sum + (Number(item.total) || 0);
         }, 0);
 
         document.getElementById('today-total-expense').textContent =
             `৳${total.toFixed(2)}`;
     }
 
-    function updateItemCount(change) {
-        const countElement = document.getElementById('today-count');
-        const pluralElement = document.getElementById('item-plural');
-        const count = Math.max(0, (parseInt(countElement.textContent, 10) || 0) + change);
-
-        countElement.textContent = count;
-        pluralElement.textContent = count === 1 ? '' : 's';
-    }
-
     function createTable() {
-        return new Tabulator('#today-expense-grid', {
-            data: todayExpenses,
+        return new Tabulator('#recent-expense-grid', {
+            data: recentExpenses,
             layout: 'fitColumns',
-            placeholder: 'No expenses added today.',
+            placeholder: 'No expenses added in the last 24 hours.',
             columns: [
+                { title: '#', formatter: 'rownum', width: 55, hozAlign: 'center' },
                 { title: 'Item', field: 'name' },
                 {
                     title: 'Price', field: 'price', hozAlign: 'right',
@@ -71,6 +70,7 @@
                     title: 'Total', field: 'total', hozAlign: 'right',
                     formatter: 'money', formatterParams: { symbol: '৳ ' }
                 },
+                { title: 'Expense Date', field: 'date' },
                 {
                     title: 'Edit', width: 80, hozAlign: 'center',
                     formatter: () => "<button class='btn-edit'>Edit</button>",
@@ -129,7 +129,6 @@
             expenseForm.reset();
             document.getElementById('id_quantity').value = 1;
             updateTotal();
-            updateItemCount(1);
         } catch (error) {
             console.error('Error adding expense:', error);
         }
@@ -180,7 +179,6 @@
 
             await row.delete();
             updateTodayTotal(todayTable.getData());
-            updateItemCount(-1);
         } catch (error) {
             console.error('Error deleting expense:', error);
         }
@@ -195,5 +193,5 @@
         button.addEventListener('click', closeEditModal);
     });
     updateTotal();
-    updateTodayTotal(todayExpenses);
+    updateTodayTotal(recentExpenses);
 }());

@@ -1,10 +1,11 @@
 import calendar
-from datetime import date
+from datetime import date, timedelta
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Sum, Count, F, DecimalField, ExpressionWrapper
-from .models import Item
+from django.utils import timezone
+from .models import Item, Lend
 from .forms import ItemForm, LendForm
 from django.shortcuts import get_object_or_404
 
@@ -32,29 +33,20 @@ def add_item(request):
                 return JsonResponse({
                     'success': True,
                     'message': 'Item added successfully!',
-                    'item': {
-                        'id': item.id,
-                        'name': item.name,
-                        'price': float(item.price),
-                        'quantity': float(item.quantity),
-                        'location': item.location,
-                        'total': float(item.total),
-                        'description': item.description,
-                        'date': item.date.strftime('%Y-%m-%d'),
-                    }
+                    'item': serialize_item(item),
                 })
             messages.success(request, "Item added successfully!")
             return redirect('expense:add_item')
     else:
         form = ItemForm()
-    today_items = Item.objects.filter(
-        date=date.today()
-    ).order_by('-created_at')    
+    recent_items = Item.objects.filter(
+        created_at__gte=timezone.now() - timedelta(hours=24)
+    ).order_by('-created_at')
 
     return render(request, 'expense/add_item.html', {
         'form': form,
-        'today_items': today_items,
-        'today_items_data': [serialize_item(item) for item in today_items],
+        'recent_items': recent_items,
+        'recent_items_data': [serialize_item(item) for item in recent_items],
     })
 
 def edit_item(request, item_id):
@@ -80,16 +72,7 @@ def edit_item(request, item_id):
             'success': True,
             'message': 'Expense updated successfully!',
 
-            'item': {
-                'id': item.id,
-                'name': item.name,
-                'price': float(item.price),
-                'quantity': float(item.quantity),
-                'location': item.location or '',
-                'total': float(item.price * item.quantity),
-                'date': item.date.strftime('%Y-%m-%d'),
-                'description': item.description or '',
-            }
+            'item': serialize_item(item),
         })
 
     return JsonResponse({
@@ -197,3 +180,12 @@ def add_lend(request):
     else:
         form = LendForm()
     return render(request, 'expense/add.html', {'form': form})
+
+
+def lend_list_page(request):
+    lends = Lend.objects.all()
+    total_lend_amount = lends.aggregate(total=Sum('amount'))['total'] or 0
+    return render(request, 'expense/lend_list.html', {
+        'lends': lends,
+        'total_lend_amount': total_lend_amount,
+    })

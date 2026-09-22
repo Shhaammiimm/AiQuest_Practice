@@ -23,7 +23,7 @@
 
     {% include 'expense/partials/edit_expense_modal.html' %}
 
-    {{ today_items_data|json_script:'today-expenses-data' }}
+    {{ recent_items_data|json_script:'recent-expenses-data' }}
     <script src="{% static 'js/tabulator.min.js' %}"></script>
     <script src="{% static 'js/expense/add_item.js' %}"></script>
 </body>

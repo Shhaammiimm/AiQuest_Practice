@@ -377,9 +377,9 @@ body {
 
 
 /* =========================================================
-   TODAY'S EXPENSES
+    RECENTLY ADDED
    ========================================================= */
-.today-expenses-header {
+.recently-added-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -393,7 +393,7 @@ body {
     border-bottom: 1px solid #e7eaed;
 }
 
-.today-expenses-section {
+.recently-added-section {
     min-width: 0;
 
     padding: 18px;
@@ -406,19 +406,15 @@ body {
     box-shadow: 0 2px 8px rgba(35, 45, 55, 0.06);
 }
 
-.today-title {
+.recently-added-title {
     color: #2f3a40;
     font-size: 20px;
     font-weight: 600;
 }
 
-.today-item-count,
 .today-total-expense {
-    font-size: 15px;
-    font-weight: 500;
-}
-
-.today-total-expense {
+    font-size: 18px;
+    font-weight: 600;
     text-align: right;
 }
 
@@ -430,32 +426,32 @@ body {
    TABULATOR
    ========================================================= */
 
-#today-expense-grid {
+#recent-expense-grid {
 
     width: 100%;
 }
 
-#today-expense-grid .tabulator-cell {
+#recent-expense-grid .tabulator-cell {
     white-space: normal;
     overflow-wrap: anywhere;
     line-height: 1.45;
 }
 
-#today-expense-grid .tabulator-row {
+#recent-expense-grid .tabulator-row {
     border-bottom: 1px solid #d5dbe0;
 }
 
-#today-expense-grid .tabulator-cell textarea {
+#recent-expense-grid .tabulator-cell textarea {
     max-height: 72px;
     overflow-y: auto;
     resize: vertical;
 }
 
-#today-expense-grid .tabulator-placeholder {
+#recent-expense-grid .tabulator-placeholder {
     background: #f8f9fa !important;
 }
 
-#today-expense-grid .tabulator-placeholder
+#recent-expense-grid .tabulator-placeholder
 .tabulator-placeholder-contents {
     color: #6c757d !important;
     font-size: 25px !important;

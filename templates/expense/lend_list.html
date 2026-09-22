@@ -1,0 +1,68 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lend List</title>
+    <link rel="stylesheet" href="{% static 'css/add_item.css' %}">
+    <link rel="stylesheet" href="{% static 'css/lend_list.css' %}">
+</head>
+<body>
+    <div class="expense-page">
+        <div class="expense-card lend-list-card">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <h2>Lend List</h2>
+                </div>
+                <div class="toolbar-right">
+                    <a href="{% url 'expense:add_lend' %}">Add Lend</a>
+                    <a href="{% url 'expense:add_item' %}">Add Expense →</a>
+                </div>
+            </div>
+
+            <section class="lend-list-section">
+                <div class="lend-list-header">
+                    <h3>Lend Records</h3>
+                    <div class="lend-list-meta">
+                        <span>{{ lends|length }} record{{ lends|length|pluralize }}</span>
+                        <strong>Total: ৳{{ total_lend_amount|floatformat:2 }}</strong>
+                    </div>
+                </div>
+
+                <div class="lend-table-wrapper">
+                    <table class="lend-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Lender</th>
+                                <th>Amount</th>
+                                <th>Lend Date</th>
+                                <th>Return Date</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lend in lends %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ lend.name }}</td>
+                                    <td>৳{{ lend.amount|floatformat:2 }}</td>
+                                    <td>{{ lend.lend_date|date:'Y-m-d' }}</td>
+                                    <td>{{ lend.return_date|date:'Y-m-d'|default:'-' }}</td>
+                                    <td>{{ lend.description|default:'-' }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td class="lend-empty" colspan="6">No lend records found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+</html>
