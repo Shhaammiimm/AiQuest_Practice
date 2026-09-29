@@ -7,8 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monthly Expense</title>
     <link rel="stylesheet" href="{% static 'css/tabulator.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/monthly_list.css' %}">
-    <link rel="stylesheet" href="{% static 'css/add_item.css' %}">
+    <link rel="stylesheet" href="{% static 'css/monthly_list.css' %}?v=11">
+    <link rel="stylesheet" href="{% static 'css/add_item.css' %}?v=14">
 </head>
 <body>
     <div class="expense-page">
@@ -18,12 +18,17 @@
              data-add-url="{% url 'expense:add_item' %}"
              data-edit-url-template="{% url 'expense:edit_item' 0 %}"
              data-delete-url-template="{% url 'expense:delete_item' 0 %}">
+            {% include 'expense/partials/global_tabs.html' with active_tab='monthly' %}
             <div class="toolbar">
                 <div class="toolbar-left"><h2>Monthly Expense</h2></div>
-                <div class="toolbar-right"><a href="{% url 'expense:add_item' %}">Add Expense →</a></div>
             </div>
 
             <div class="filter-section">
+                <div class="month-switcher" aria-label="Month navigation">
+                    <button type="button" id="previous-month" aria-label="Previous month">&larr;</button>
+                    <strong id="active-month-label"></strong>
+                    <button type="button" id="next-month" aria-label="Next month">&rarr;</button>
+                </div>
                 <div class="filter-group">
                     <label for="year-filter">Year</label>
                     <select id="year-filter"></select>
@@ -47,9 +52,27 @@
                 </div>
             </div>
 
+            <section class="monthly-summary-strip" aria-label="Monthly summary" aria-live="polite">
+                <div class="monthly-summary-stat monthly-summary-total">
+                    <span>Month total</span>
+                    <strong id="monthly-total">৳0.00</strong>
+                </div>
+                <div class="monthly-summary-stat">
+                    <span>Days with expenses</span>
+                    <strong id="monthly-active-days">0</strong>
+                </div>
+                <div class="monthly-summary-stat">
+                    <span>Average per day</span>
+                    <strong id="monthly-daily-average">৳0.00</strong>
+                </div>
+            </section>
+
             <div class="expense-layout">
                 <div class="left-panel">
                     <div class="panel-header"><h3 id="monthly-heading">Monthly Overview</h3></div>
+                    <div class="calendar-weekdays" aria-hidden="true">
+                        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                    </div>
                     <div id="days-grid"></div>
                 </div>
                 <div class="right-panel">
@@ -75,6 +98,7 @@
                 </div>
             </div>
         </div>
+        {% include 'expense/partials/site_footer.html' %}
     </div>
 
     {% include 'expense/partials/edit_expense_modal.html' %}

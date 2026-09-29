@@ -1,13 +1,77 @@
 import calendar
 from datetime import date, timedelta
+from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from django.db.models import Sum, Count, F, DecimalField, ExpressionWrapper
 from django.utils import timezone
-from .models import Item, Lend
-from .forms import ItemForm, LendForm
+from .models import Borrow, Item, Lend
+from .forms import ItemForm, LendForm, BorrowForm
 from django.shortcuts import get_object_or_404
+
+
+def home_page(request):
+    today = timezone.localdate()
+    month_start = today.replace(day=1)
+    year_start = today.replace(month=1, day=1)
+    line_total = ExpressionWrapper(
+        F('price') * F('quantity'),
+        output_field=DecimalField(max_digits=18, decimal_places=2),
+    )
+    items = Item.objects.annotate(line_total=line_total)
+
+    month_items = items.filter(date__range=(month_start, today))
+    year_items = items.filter(date__range=(year_start, today))
+    month_summary = month_items.aggregate(total=Sum('line_total'), count=Count('id'))
+    year_summary = year_items.aggregate(total=Sum('line_total'), count=Count('id'))
+    today_summary = items.filter(date=today).aggregate(total=Sum('line_total'), count=Count('id'))
+    month_spend_days = month_items.values('date').distinct().count()
+
+    trend_start = (month_start - timedelta(days=1)).replace(day=1)
+    for _ in range(4):
+        trend_start = (trend_start - timedelta(days=1)).replace(day=1)
+    trend_rows = (
+        items.filter(date__range=(trend_start, today))
+        .values('date__year', 'date__month')
+        .annotate(total=Sum('line_total'))
+    )
+    trend_totals = {
+        (row['date__year'], row['date__month']): row['total'] or Decimal('0.00')
+        for row in trend_rows
+    }
+    months = []
+    cursor = trend_start
+    for _ in range(6):
+        total = trend_totals.get((cursor.year, cursor.month), Decimal('0.00'))
+        months.append({
+            'label': cursor.strftime('%b'),
+            'year': cursor.year,
+            'total': total,
+            'is_current': cursor.year == today.year and cursor.month == today.month,
+        })
+        cursor = (cursor.replace(day=28) + timedelta(days=4)).replace(day=1)
+    peak = max((month['total'] for month in months), default=Decimal('0.00'))
+    for month in months:
+        month['bar_height'] = max(5, int(month['total'] / peak * 100)) if peak else 5
+
+    largest_item = year_items.order_by('-line_total', '-date').first()
+    return render(request, 'expense/home.html', {
+        'today': today,
+        'month_total': month_summary['total'] or Decimal('0.00'),
+        'month_count': month_summary['count'],
+        'month_spend_days': month_spend_days,
+        'month_daily_average': (month_summary['total'] or Decimal('0.00')) / month_spend_days if month_spend_days else Decimal('0.00'),
+        'year_total': year_summary['total'] or Decimal('0.00'),
+        'year_count': year_summary['count'],
+        'year_daily_average': (year_summary['total'] or Decimal('0.00')) / today.timetuple().tm_yday,
+        'today_total': today_summary['total'] or Decimal('0.00'),
+        'today_count': today_summary['count'],
+        'largest_item': largest_item,
+        'monthly_trend': months,
+        'recent_items': items.order_by('-date', '-created_at')[:6],
+    })
 
 
 def serialize_item(item):
@@ -176,7 +240,7 @@ def add_lend(request):
                     }
                 })
             messages.success(request, "Lend record added successfully!")
-            return redirect('expense:add_lend')
+            return redirect('expense:lend_list')
     else:
         form = LendForm()
     return render(request, 'expense/add.html', {'form': form})
@@ -189,3 +253,109 @@ def lend_list_page(request):
         'lends': lends,
         'total_lend_amount': total_lend_amount,
     })
+
+
+def edit_lend(request, lend_id):
+    lend = get_object_or_404(Lend, pk=lend_id)
+    if request.method == 'POST':
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        form = LendForm(request.POST, instance=lend)
+        if form.is_valid():
+            lend = form.save()
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'record': {
+                        'id': lend.id,
+                        'name': lend.name,
+                        'amount': str(lend.amount),
+                        'date': lend.lend_date.strftime('%Y-%m-%d'),
+                        'return_date': lend.return_date.strftime('%Y-%m-%d') if lend.return_date else '',
+                        'description': lend.description or '',
+                    },
+                })
+            messages.success(request, 'Lend record updated successfully!')
+            return redirect('expense:lend_list')
+        if is_ajax:
+            return JsonResponse({'success': False, 'errors': form.errors.get_json_data()}, status=400)
+    else:
+        form = LendForm(instance=lend)
+    return render(request, 'expense/add.html', {'form': form, 'is_edit': True})
+
+
+@require_POST
+def delete_lend(request, lend_id):
+    lend = get_object_or_404(Lend, pk=lend_id)
+    lend.delete()
+    messages.success(request, 'Lend record deleted successfully!')
+    return redirect('expense:lend_list')
+
+
+def add_borrow(request):
+    if request.method == 'POST':
+        form = BorrowForm(request.POST)
+        if form.is_valid():
+            borrow = form.save()
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Borrow record added successfully!',
+                    'borrow': {
+                        'id': borrow.id,
+                        'name': borrow.name,
+                        'amount': float(borrow.amount),
+                        'borrow_date': borrow.borrow_date.strftime('%Y-%m-%d'),
+                        'return_date': borrow.return_date.strftime('%Y-%m-%d') if borrow.return_date else None,
+                        'description': borrow.description or '',
+                    }
+                })
+            messages.success(request, "Borrow record added successfully!")
+            return redirect('expense:borrow_list')
+    else:
+        form = BorrowForm()
+    return render(request, 'expense/add_borrow.html', {'form': form})
+
+def borrow_list_page(request):
+    borrows = Borrow.objects.all()
+    total_borrow_amount = borrows.aggregate(total=Sum('amount'))['total'] or 0
+    return render(request, 'expense/borrow_list.html', {
+        'borrows': borrows,
+        'total_borrow_amount': total_borrow_amount,
+    })
+
+
+def edit_borrow(request, borrow_id):
+    borrow = get_object_or_404(Borrow, pk=borrow_id)
+    if request.method == 'POST':
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        form = BorrowForm(request.POST, instance=borrow)
+        if form.is_valid():
+            borrow = form.save()
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'record': {
+                        'id': borrow.id,
+                        'name': borrow.name,
+                        'amount': str(borrow.amount),
+                        'date': borrow.borrow_date.strftime('%Y-%m-%d'),
+                        'return_date': borrow.return_date.strftime('%Y-%m-%d') if borrow.return_date else '',
+                        'description': borrow.description or '',
+                    },
+                })
+            messages.success(request, 'Borrow record updated successfully!')
+            return redirect('expense:borrow_list')
+        if is_ajax:
+            return JsonResponse({'success': False, 'errors': form.errors.get_json_data()}, status=400)
+    else:
+        form = BorrowForm(instance=borrow)
+    return render(request, 'expense/add_borrow.html', {'form': form, 'is_edit': True})
+
+
+@require_POST
+def delete_borrow(request, borrow_id):
+    borrow = get_object_or_404(Borrow, pk=borrow_id)
+    borrow.delete()
+    messages.success(request, 'Borrow record deleted successfully!')
+    return redirect('expense:borrow_list')

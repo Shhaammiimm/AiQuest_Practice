@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Overview</title>
+    <link rel="stylesheet" href="{% static 'css/add_item.css' %}?v=14">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}?v=2">
+</head>
+<body>
+    <main class="expense-page">
+        <div class="expense-card home-dashboard" id="expense-home">
+            {% include 'expense/partials/global_tabs.html' with active_tab='home' %}
+
+            <header class="dashboard-heading">
+                <div>
+                    <span class="dashboard-eyebrow">YOUR MONEY, IN VIEW</span>
+                    <h1>Expense Overview</h1>
+                    <p>{{ today|date:'l, j F Y' }}</p>
+                </div>
+                <a class="dashboard-primary-action" href="{% url 'expense:add_item' %}"><span aria-hidden="true">+</span> Add expense</a>
+            </header>
+
+            <section class="dashboard-kpis" aria-label="Expense totals">
+                <article class="dashboard-kpi kpi-month">
+                    <span class="kpi-label">This month</span>
+                    <strong>৳{{ month_total|floatformat:2 }}</strong>
+                    <span class="kpi-note">{{ month_count }} purchase{{ month_count|pluralize }} across {{ month_spend_days }} day{{ month_spend_days|pluralize }}</span>
+                </article>
+                <article class="dashboard-kpi kpi-year">
+                    <span class="kpi-label">This year</span>
+                    <strong>৳{{ year_total|floatformat:2 }}</strong>
+                    <span class="kpi-note">{{ year_count }} purchase{{ year_count|pluralize }} year to date</span>
+                </article>
+                <article class="dashboard-kpi kpi-today">
+                    <span class="kpi-label">Today</span>
+                    <strong>৳{{ today_total|floatformat:2 }}</strong>
+                    <span class="kpi-note">{{ today_count }} purchase{{ today_count|pluralize }}</span>
+                </article>
+            </section>
+
+            <section class="dashboard-content-grid">
+                <section class="dashboard-section trend-section" aria-labelledby="trend-title">
+                    <div class="dashboard-section-heading">
+                        <div>
+                            <span class="section-kicker">SPENDING RHYTHM</span>
+                            <h2 id="trend-title">Monthly trend</h2>
+                        </div>
+                        <a href="{% url 'expense:monthly_list' %}">Open calendar <span aria-hidden="true">→</span></a>
+                    </div>
+                    <div class="trend-chart" role="img" aria-label="Monthly expense totals for the last six months">
+                        {% for month in monthly_trend %}
+                            <div class="trend-column">
+                                <span class="trend-value">৳{{ month.total|floatformat:0 }}</span>
+                                <div class="trend-bar-track"><span class="trend-bar{% if month.is_current %} is-current{% endif %}" style="--bar-height: {{ month.bar_height }}%"></span></div>
+                                <span class="trend-month">{{ month.label }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="dashboard-section insight-section" aria-labelledby="insight-title">
+                    <div class="dashboard-section-heading">
+                        <div>
+                            <span class="section-kicker">A QUICK READ</span>
+                            <h2 id="insight-title">Your pace</h2>
+                        </div>
+                    </div>
+                    <div class="pace-metric">
+                        <span>Average per spend day this month</span>
+                        <strong>৳{{ month_daily_average|floatformat:2 }}</strong>
+                    </div>
+                    <div class="pace-metric year-pace">
+                        <span>Average per day this year</span>
+                        <strong>৳{{ year_daily_average|floatformat:2 }}</strong>
+                    </div>
+                    {% if largest_item %}
+                        <div class="largest-purchase">
+                            <span>Largest purchase this year</span>
+                            <strong>{{ largest_item.name }}</strong>
+                            <span class="largest-total">৳{{ largest_item.total|floatformat:2 }} <span>· {{ largest_item.date|date:'j M' }}</span></span>
+                        </div>
+                    {% else %}
+                        <div class="largest-purchase empty-insight">Your first purchase will show up here.</div>
+                    {% endif %}
+                </section>
+            </section>
+
+            <section class="dashboard-section recent-section" aria-labelledby="recent-title">
+                <div class="dashboard-section-heading">
+                    <div>
+                        <span class="section-kicker">LATEST ACTIVITY</span>
+                        <h2 id="recent-title">Recent purchases</h2>
+                    </div>
+                    <a href="{% url 'expense:monthly_list' %}">View all <span aria-hidden="true">→</span></a>
+                </div>
+                {% if recent_items %}
+                    <div class="recent-table-wrap">
+                        <table class="recent-table">
+                            <thead><tr><th>Item</th><th>Date</th><th>Qty</th><th class="recent-amount">Total</th></tr></thead>
+                            <tbody>
+                                {% for item in recent_items %}
+                                    <tr>
+                                        <td><strong>{{ item.name }}</strong>{% if item.location %}<span class="recent-location">{{ item.location }}</span>{% endif %}</td>
+                                        <td>{{ item.date|date:'j M Y' }}</td>
+                                        <td>{{ item.quantity|floatformat:'-2' }}</td>
+                                        <td class="recent-amount">৳{{ item.total|floatformat:2 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="dashboard-empty">No purchases yet. Add your first expense to get started.</div>
+                {% endif %}
+            </section>
+
+            <section class="dashboard-quick-links" aria-label="Money records">
+                <div><span class="quick-link-mark lend-mark" aria-hidden="true">↗</span><span><strong>Money you lent</strong><small>Track amounts given to others</small></span><a href="{% url 'expense:lend_list' %}">View lends <span aria-hidden="true">→</span></a></div>
+                <div><span class="quick-link-mark borrow-mark" aria-hidden="true">↙</span><span><strong>Money you borrowed</strong><small>Keep repayments in view</small></span><a href="{% url 'expense:borrow_list' %}">View borrows <span aria-hidden="true">→</span></a></div>
+            </section>
+        </div>
+        {% include 'expense/partials/site_footer.html' %}
+    </main>
+</body>
+</html>

@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Expense</title>
     <link rel="stylesheet" href="{% static 'css/tabulator.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/add_item.css' %}">
+    <link rel="stylesheet" href="{% static 'css/add_item.css' %}?v=14">
 </head>
 <body>
     <div class="expense-page">
@@ -15,10 +15,12 @@
              data-add-url="{% url 'expense:add_item' %}"
              data-edit-url-template="{% url 'expense:edit_item' 0 %}"
              data-delete-url-template="{% url 'expense:delete_item' 0 %}">
+            {% include 'expense/partials/global_tabs.html' with active_tab='items' %}
             {% include 'expense/partials/add_item_toolbar.html' %}
             {% include 'expense/partials/add_item_form.html' %}
             {% include 'expense/partials/today_expenses.html' %}
         </div>
+        {% include 'expense/partials/site_footer.html' %}
     </div>
 
     {% include 'expense/partials/edit_expense_modal.html' %}

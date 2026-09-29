@@ -4,6 +4,7 @@
     const page = document.getElementById('monthly-expense-page');
     const yearFilter = document.getElementById('year-filter');
     const monthFilter = document.getElementById('month-filter');
+    const daysGrid = document.getElementById('days-grid');
     const editModal = document.getElementById('edit-modal');
     const editForm = document.getElementById('edit-form');
     const monthlyAddModal = document.getElementById('monthly-add-modal');
@@ -13,6 +14,7 @@
     let selectedMonth = today.getMonth() + 1;
     let selectedDay = today.getDate();
     let editingRow = null;
+    let monthData = [];
 
     function getUrl(template, values) {
         return template.replace(/0/g, () => values.shift());
@@ -31,12 +33,69 @@
         const name = monthName(selectedYear, selectedMonth);
         const formattedDate = `${day} ${name} ${selectedYear}`;
         document.getElementById('monthly-heading').textContent = `${name} ${selectedYear} Overview`;
+        document.getElementById('active-month-label').textContent = `${name} ${selectedYear}`;
         document.getElementById('selected-day-date').textContent = formattedDate;
     }
 
     function updateDaySummary(rowData) {
         document.getElementById('selected-day-total').textContent = `৳${Number(rowData.total || 0).toFixed(2)}`;
         document.getElementById('selected-day-items').textContent = rowData.count || 0;
+    }
+
+    function updateMonthlySummary(rows) {
+        const total = rows.reduce((sum, row) => sum + Number(row.total || 0), 0);
+        const activeDays = rows.filter((row) => Number(row.total) > 0).length;
+        document.getElementById('monthly-total').textContent = `৳${total.toFixed(2)}`;
+        document.getElementById('monthly-active-days').textContent = activeDays;
+        document.getElementById('monthly-daily-average').textContent =
+            `৳${(total / (rows.length || 1)).toFixed(2)}`;
+    }
+
+    function spendingLevel(total, maximum) {
+        if (total <= 0 || maximum <= 0) return 0;
+        const ratio = total / maximum;
+        if (ratio <= 0.25) return 1;
+        if (ratio <= 0.5) return 2;
+        if (ratio <= 0.75) return 3;
+        return 4;
+    }
+
+    function renderCalendar(rows) {
+        daysGrid.replaceChildren();
+        const firstWeekday = new Date(selectedYear, selectedMonth - 1, 1).getDay();
+        const maximum = Math.max(...rows.map((row) => Number(row.total) || 0), 0);
+        for (let index = 0; index < firstWeekday; index += 1) {
+            const spacer = document.createElement('span');
+            spacer.className = 'calendar-spacer';
+            spacer.setAttribute('aria-hidden', 'true');
+            daysGrid.appendChild(spacer);
+        }
+
+        rows.forEach((row) => {
+            const amount = Number(row.total) || 0;
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'calendar-day';
+            button.dataset.day = row.day;
+            button.dataset.level = spendingLevel(amount, maximum);
+            button.setAttribute('aria-pressed', String(row.day === selectedDay));
+            button.setAttribute(
+                'aria-label',
+                `${monthName(selectedYear, selectedMonth)} ${row.day}: ৳${amount.toFixed(2)}, ${row.count} items`
+            );
+
+            const dayNumber = document.createElement('span');
+            dayNumber.className = 'calendar-day-number';
+            dayNumber.textContent = row.day;
+            const total = document.createElement('span');
+            total.className = 'calendar-day-total';
+            total.textContent = amount ? `৳${amount.toFixed(0)}` : '—';
+            const count = document.createElement('span');
+            count.className = 'calendar-day-count';
+            count.textContent = row.count ? `${row.count} item${row.count === 1 ? '' : 's'}` : '';
+            button.append(dayNumber, total, count);
+            daysGrid.appendChild(button);
+        });
     }
 
     function updateEditTotal() {
@@ -91,18 +150,6 @@
         return response.json();
     }
 
-    const daysTable = new Tabulator('#days-grid', {
-        layout: 'fitColumns',
-        height: '600px',
-        selectableRows: 1,
-        placeholder: 'No days available.',
-        columns: [
-            { title: 'Day', field: 'day', width: 70, hozAlign: 'center', sorter: 'number' },
-            { title: 'Day Name', field: 'day_name' },
-            { title: 'Total', field: 'total', hozAlign: 'right', formatter: 'money', formatterParams: { symbol: '৳ ', precision: 2 } }
-        ]
-    });
-
     const detailTable = new Tabulator('#detail-grid', {
         layout: 'fitColumns',
         height: '600px',
@@ -141,21 +188,43 @@
 
     async function loadMonth() {
         const response = await fetch(`${page.dataset.summaryUrl}?year=${selectedYear}&month=${selectedMonth}`);
+        if (!response.ok) throw new Error('Could not load monthly expense summary.');
         const data = await response.json();
-        const formattedData = data.map((item) => ({
-            ...item,
-            day_name: new Date(selectedYear, selectedMonth - 1, item.day).toLocaleDateString('en-US', { weekday: 'long' })
-        }));
-        await daysTable.setData(formattedData);
+        monthData = data;
+        selectedDay = Math.min(selectedDay, data.length || 1);
+        updateMonthlySummary(data);
+        renderCalendar(data);
+        const selected = data.find((row) => row.day === selectedDay) || data[0];
+        if (selected) await selectDay(selected);
+    }
 
-        const defaultRow = daysTable.getRows().find((row) => row.getData().day === selectedDay) || daysTable.getRows()[0];
-        if (defaultRow) {
-            selectedDay = defaultRow.getData().day;
-            defaultRow.select();
-            updateDaySummary(defaultRow.getData());
-            updateHeadings(selectedDay);
-            await loadDayDetails(selectedDay);
-        }
+    async function selectDay(dayData) {
+        selectedDay = dayData.day;
+        daysGrid.querySelectorAll('.calendar-day').forEach((button) => {
+            button.setAttribute('aria-pressed', String(Number(button.dataset.day) === selectedDay));
+        });
+        updateDaySummary(dayData);
+        updateHeadings(selectedDay);
+        await loadDayDetails(selectedDay);
+    }
+
+    function syncMonthControls() {
+        yearFilter.value = selectedYear;
+        monthFilter.value = selectedMonth;
+        document.getElementById('previous-month').disabled = selectedYear === 2020 && selectedMonth === 1;
+        const nextMonth = new Date(selectedYear, selectedMonth, 1);
+        document.getElementById('next-month').disabled =
+            nextMonth > new Date(today.getFullYear(), today.getMonth(), 1);
+    }
+
+    async function moveMonth(offset) {
+        const nextDate = new Date(selectedYear, selectedMonth - 1 + offset, 1);
+        if (nextDate.getFullYear() < 2020 || nextDate > new Date(today.getFullYear(), today.getMonth(), 1)) return;
+        selectedYear = nextDate.getFullYear();
+        selectedMonth = nextDate.getMonth() + 1;
+        selectedDay = 1;
+        syncMonthControls();
+        await loadMonth();
     }
 
     async function deleteExpense(row) {
@@ -212,24 +281,29 @@
         }
     });
 
-    daysTable.on('rowClick', async (event, row) => {
-        selectedDay = row.getData().day;
-        updateDaySummary(row.getData());
-        updateHeadings(selectedDay);
-        await loadDayDetails(selectedDay);
+    daysGrid.addEventListener('click', async (event) => {
+        const dayButton = event.target.closest('[data-day]');
+        if (!dayButton) return;
+        const dayData = monthData.find((row) => row.day === Number(dayButton.dataset.day));
+        if (dayData) await selectDay(dayData);
     });
 
     yearFilter.addEventListener('change', async () => {
         selectedYear = parseInt(yearFilter.value, 10);
         selectedDay = 1;
+        syncMonthControls();
         await loadMonth();
     });
 
     monthFilter.addEventListener('change', async () => {
         selectedMonth = parseInt(monthFilter.value, 10);
         selectedDay = 1;
+        syncMonthControls();
         await loadMonth();
     });
+
+    document.getElementById('previous-month').addEventListener('click', () => moveMonth(-1));
+    document.getElementById('next-month').addEventListener('click', () => moveMonth(1));
 
     document.getElementById('edit-price').addEventListener('input', updateEditTotal);
     document.getElementById('edit-quantity').addEventListener('input', updateEditTotal);
@@ -249,7 +323,6 @@
         option.textContent = year;
         yearFilter.appendChild(option);
     }
-    yearFilter.value = selectedYear;
-    monthFilter.value = selectedMonth;
+    syncMonthControls();
     loadMonth().catch((error) => console.error('Error loading monthly expenses:', error));
 }());

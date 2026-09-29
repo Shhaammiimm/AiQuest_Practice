@@ -5,33 +5,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if is_edit %}Edit Lend{% else %}Add Lend{% endif %}</title>
+    <title>{% if is_edit %}Edit Borrow{% else %}Add Borrow{% endif %}</title>
     <link rel="stylesheet" href="{% static 'css/add_item.css' %}?v=14">
 </head>
 <body>
     <div class="expense-page">
         <div class="expense-card lend-page-card">
-            {% include 'expense/partials/global_tabs.html' with active_tab='lend' %}
+            {% include 'expense/partials/global_tabs.html' with active_tab='borrow' %}
             <div class="toolbar">
                 <div class="toolbar-left">
-                    <h2>{% if is_edit %}Edit Lend{% else %}Add Lend{% endif %}</h2>
+                    <h2>{% if is_edit %}Edit Borrow{% else %}Add Borrow{% endif %}</h2>
                 </div>
             </div>
 
             <section class="expense-form-section">
                 <div class="form-header">
-                    <h3>{% if is_edit %}Update the lend details{% else %}Enter the lend details{% endif %}</h3>
-                    <button type="submit" form="lend-form" class="btn-add">{% if is_edit %}Update Lend{% else %}Save Lend{% endif %}</button>
+                    <h3>{% if is_edit %}Update the borrow details{% else %}Enter the borrow details{% endif %}</h3>
+                    <button type="submit" form="borrow-form" class="btn-add">{% if is_edit %}Update Borrow{% else %}Save Borrow{% endif %}</button>
                 </div>
 
-                <form method="post" id="lend-form">
+                <form method="post" id="borrow-form">
                     {% csrf_token %}
                     <div class="form-grid">
                         {% for field in form %}
                             <div class="form-group
                                 {% if field.name == 'description' %}full-width{% endif %}
                                 {% if field.field.required %}required-field{% endif %}">
-                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                <label for="{{ field.id_for_label }}">
+                                    {% if field.name == 'name' %}Borrower Name
+                                    {% elif field.name == 'lend_date' or field.name == 'borrow_date' %}Borrow Date
+                                    {% else %}{{ field.label }}{% endif %}
+                                </label>
                                 {{ field }}
                                 {% if field.errors %}
                                     <div class="field-error">{{ field.errors }}</div>

@@ -6,28 +6,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lend List</title>
-    <link rel="stylesheet" href="{% static 'css/add_item.css' %}">
-    <link rel="stylesheet" href="{% static 'css/lend_list.css' %}">
+    <link rel="stylesheet" href="{% static 'css/add_item.css' %}?v=14">
+    <link rel="stylesheet" href="{% static 'css/lend_list.css' %}?v=8">
 </head>
 <body>
     <div class="expense-page">
-        <div class="expense-card lend-list-card">
+                <div class="expense-card lend-list-card" id="record-list-page"
+                         data-record-label="Lend"
+                         data-date-field="lend_date"
+                         data-edit-url-template="{% url 'expense:edit_lend' 0 %}"
+                         data-delete-url-template="{% url 'expense:delete_lend' 0 %}">
+            {% include 'expense/partials/global_tabs.html' with active_tab='lend' %}
             <div class="toolbar">
                 <div class="toolbar-left">
                     <h2>Lend List</h2>
                 </div>
                 <div class="toolbar-right">
-                    <a href="{% url 'expense:add_lend' %}">Add Lend</a>
-                    <a href="{% url 'expense:add_item' %}">Add Expense →</a>
+                    <a class="toolbar-add-action" href="{% url 'expense:add_lend' %}">Add Lend</a>
                 </div>
             </div>
 
             <section class="lend-list-section">
-                <div class="lend-list-header">
-                    <h3>Lend Records</h3>
+                    <div class="lend-list-header">
+                    <div class="lend-list-title">
+                        <span class="lend-list-eyebrow">Your activity</span>
+                        <h3>Lend Records</h3>
+                    </div>
                     <div class="lend-list-meta">
-                        <span>{{ lends|length }} record{{ lends|length|pluralize }}</span>
-                        <strong>Total: ৳{{ total_lend_amount|floatformat:2 }}</strong>
+                        <span class="lend-record-count"><strong>{{ lends|length }}</strong> record{{ lends|length|pluralize }}</span>
+                        <strong class="lend-total"><span>Total lent</span>৳{{ total_lend_amount|floatformat:2 }}</strong>
                     </div>
                 </div>
 
@@ -41,6 +48,7 @@
                                 <th>Lend Date</th>
                                 <th>Return Date</th>
                                 <th>Description</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -52,10 +60,22 @@
                                     <td>{{ lend.lend_date|date:'Y-m-d' }}</td>
                                     <td>{{ lend.return_date|date:'Y-m-d'|default:'-' }}</td>
                                     <td>{{ lend.description|default:'-' }}</td>
+                                    <td class="lend-row-actions">
+                                        <button class="row-action row-action-edit" type="button"
+                                                data-edit-record data-id="{{ lend.id }}"
+                                                data-name="{{ lend.name }}"
+                                                data-amount="{{ lend.amount }}"
+                                                data-date="{{ lend.lend_date|date:'Y-m-d' }}"
+                                                data-return-date="{{ lend.return_date|date:'Y-m-d' }}"
+                                                data-description="{{ lend.description|default_if_none:'' }}">Edit</button>
+                                        <button class="row-action row-action-delete" type="button"
+                                                data-delete-record data-id="{{ lend.id }}"
+                                                data-name="{{ lend.name }}">Delete</button>
+                                    </td>
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td class="lend-empty" colspan="6">No lend records found.</td>
+                                    <td class="lend-empty" colspan="7">No lend records found.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -63,6 +83,9 @@
                 </div>
             </section>
         </div>
+        {% include 'expense/partials/site_footer.html' %}
     </div>
+    {% include 'expense/partials/record_action_modal.html' %}
+    <script src="{% static 'js/expense/record_actions.js' %}?v=2"></script>
 </body>
 </html>

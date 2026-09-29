@@ -1,5 +1,5 @@
 from django import forms
-from .models import Item, Lend
+from .models import Borrow, Item, Lend
 
 
 class ItemForm(forms.ModelForm):
@@ -40,5 +40,24 @@ class LendForm(forms.ModelForm):
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter description', 'rows': 3}),
             'lend_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'return_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }        
+
+class BorrowForm(forms.ModelForm):
+    class Meta:
+        model = Borrow
+        fields = ['name', 'amount', 'borrow_date', 'return_date', 'description']
+        labels = {
+            'name': 'Borrower Name',
+            'amount': 'Amount',
+            'borrow_date': 'Borrow Date',
+            'return_date': 'Return Date',
+            'description': 'Description',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter borrower name'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter description', 'rows': 3}),
+            'borrow_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'return_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         }        

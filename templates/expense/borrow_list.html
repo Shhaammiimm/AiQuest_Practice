@@ -1,0 +1,91 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrow List</title>
+    <link rel="stylesheet" href="{% static 'css/add_item.css' %}?v=14">
+    <link rel="stylesheet" href="{% static 'css/lend_list.css' %}?v=8">
+</head>
+<body>
+    <div class="expense-page">
+                <div class="expense-card lend-list-card" id="record-list-page"
+                         data-record-label="Borrow"
+                         data-date-field="borrow_date"
+                         data-edit-url-template="{% url 'expense:edit_borrow' 0 %}"
+                         data-delete-url-template="{% url 'expense:delete_borrow' 0 %}">
+            {% include 'expense/partials/global_tabs.html' with active_tab='borrow' %}
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <h2>Borrow List</h2>
+                </div>
+                <div class="toolbar-right">
+                    <a class="toolbar-add-action" href="{% url 'expense:add_borrow' %}">Add Borrow</a>
+                </div>
+            </div>
+
+            <section class="lend-list-section">
+                <div class="lend-list-header">
+                    <div class="lend-list-title">
+                        <span class="lend-list-eyebrow">Your activity</span>
+                        <h3>Borrow Records</h3>
+                    </div>
+                    <div class="lend-list-meta">
+                        <span class="lend-record-count"><strong>{{ borrows|length }}</strong> record{{ borrows|length|pluralize }}</span>
+                        <strong class="lend-total"><span>Total borrowed</span>৳{{ total_borrow_amount|floatformat:2 }}</strong>
+                    </div>
+                </div>
+
+                <div class="lend-table-wrapper">
+                    <table class="lend-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Borrower</th>
+                                <th>Amount</th>
+                                <th>Borrow Date</th>
+                                <th>Return Date</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for borrow in borrows %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ borrow.name }}</td>
+                                    <td>৳{{ borrow.amount|floatformat:2 }}</td>
+                                    <td>{% if borrow.borrow_date %}{{ borrow.borrow_date|date:'Y-m-d' }}{% else %}{{ borrow.lend_date|date:'Y-m-d' }}{% endif %}</td>
+                                    <td>{{ borrow.return_date|date:'Y-m-d'|default:'-' }}</td>
+                                    <td>{{ borrow.description|default:'-' }}</td>
+                                    <td class="lend-row-actions">
+                                        <button class="row-action row-action-edit" type="button"
+                                                data-edit-record data-id="{{ borrow.id }}"
+                                                data-name="{{ borrow.name }}"
+                                                data-amount="{{ borrow.amount }}"
+                                                data-date="{{ borrow.borrow_date|date:'Y-m-d' }}"
+                                                data-return-date="{{ borrow.return_date|date:'Y-m-d' }}"
+                                                data-description="{{ borrow.description|default_if_none:'' }}">Edit</button>
+                                        <button class="row-action row-action-delete" type="button"
+                                                data-delete-record data-id="{{ borrow.id }}"
+                                                data-name="{{ borrow.name }}">Delete</button>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td class="lend-empty" colspan="7">No borrow records found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+        {% include 'expense/partials/site_footer.html' %}
+    </div>
+    {% include 'expense/partials/record_action_modal.html' %}
+    <script src="{% static 'js/expense/record_actions.js' %}?v=2"></script>
+</body>
+</html>

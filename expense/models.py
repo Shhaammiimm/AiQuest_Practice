@@ -44,3 +44,22 @@ class Lend(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.amount} - {self.lend_date}"
+    
+
+class Borrow(models.Model):
+    name = models.CharField(max_length=200)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    borrow_date = models.DateField(default=datetime.date.today, blank=True)
+    return_date = models.DateField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-borrow_date', '-created_at']
+        indexes = [
+            models.Index(fields=['borrow_date']),
+        ]
+
+    def __str__(self):
+        return f"{self.name} - {self.amount} - {self.borrow_date}"    

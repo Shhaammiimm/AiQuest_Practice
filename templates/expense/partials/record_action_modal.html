@@ -1,0 +1,53 @@
+<div class="record-modal" id="record-action-modal" aria-hidden="true">
+    <div class="record-modal-backdrop" data-modal-close></div>
+    <section class="record-modal-panel" role="dialog" aria-modal="true" aria-labelledby="record-modal-title" tabindex="-1">
+        <div class="record-modal-header">
+            <h3 id="record-modal-title"></h3>
+            <button class="record-modal-close" type="button" data-modal-close aria-label="Close">&times;</button>
+        </div>
+
+        <div data-edit-panel hidden>
+            <form id="record-edit-form" method="post">
+                {% csrf_token %}
+                <div class="record-edit-errors" data-edit-errors role="alert" hidden></div>
+                <div class="edit-grid">
+                    <div class="form-group">
+                        <label for="record-name">Name</label>
+                        <input id="record-name" name="name" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="record-amount">Amount</label>
+                        <input id="record-amount" name="amount" type="number" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label id="record-date-label" for="record-date">Date</label>
+                        <input id="record-date" type="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="record-return-date">Return Date</label>
+                        <input id="record-return-date" name="return_date" type="date">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="record-description">Description</label>
+                        <textarea id="record-description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="record-modal-actions">
+                    <button type="button" data-modal-close>Cancel</button>
+                    <button type="submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
+
+        <div data-delete-panel hidden>
+            <form id="record-delete-form" method="post">
+                {% csrf_token %}
+                <p class="record-delete-copy">Delete <strong id="record-delete-name"></strong>? This action cannot be undone.</p>
+                <div class="record-modal-actions">
+                    <button type="button" data-modal-close>Cancel</button>
+                    <button class="record-confirm-delete" type="submit">Delete Record</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>

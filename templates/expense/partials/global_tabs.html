@@ -1,0 +1,17 @@
+<nav class="expense-global-tabs" aria-label="Expense sections">
+    <a class="expense-nav-brand{% if active_tab == 'home' %} is-active{% endif %}" href="{% url 'expense:home' %}" aria-label="Expense Tracker home"{% if active_tab == 'home' %} aria-current="page"{% endif %}><span>Expense Tracker</span></a>
+    <div class="expense-nav-links">
+        <a href="{% url 'expense:add_item' %}"{% if active_tab == 'items' %} class="is-active" aria-current="page"{% endif %}>
+            <span class="expense-nav-icon" aria-hidden="true">+</span><span>Add Item</span>
+        </a>
+        <a href="{% url 'expense:monthly_list' %}"{% if active_tab == 'monthly' %} class="is-active" aria-current="page"{% endif %}>
+            <span class="expense-nav-icon" aria-hidden="true">▦</span><span>Monthly List</span>
+        </a>
+        <a href="{% url 'expense:lend_list' %}"{% if active_tab == 'lend' %} class="is-active" aria-current="page"{% endif %}>
+            <span class="expense-nav-icon" aria-hidden="true">↗</span><span>Lend List</span>
+        </a>
+        <a href="{% url 'expense:borrow_list' %}"{% if active_tab == 'borrow' %} class="is-active" aria-current="page"{% endif %}>
+            <span class="expense-nav-icon" aria-hidden="true">↙</span><span>Borrow List</span>
+        </a>
+    </div>
+</nav>
