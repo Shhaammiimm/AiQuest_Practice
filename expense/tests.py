@@ -1,16 +1,23 @@
 from datetime import date, timedelta
 from decimal import Decimal
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from .models import Borrow, Item, Lend
 
+User = get_user_model()
+
 
 class RecentlyAddedExpensesTests(TestCase):
+	def setUp(self):
+		self.user = User.objects.create_user(username='testuser', password='testpass123')
+		self.client.force_login(self.user)
 	def test_borrow_records_are_separate_from_lend_records(self):
 		lend = Lend.objects.create(
+			user=self.user,
 			name='Lend only',
 			amount=Decimal('100.00'),
 			lend_date=date(2026, 9, 20),
@@ -39,6 +46,7 @@ class RecentlyAddedExpensesTests(TestCase):
 
 	def test_lend_list_shows_saved_lend_information(self):
 		Lend.objects.create(
+			user=self.user,
 			name='Rahim',
 			amount=Decimal('2500.00'),
 			lend_date=date(2026, 9, 20),
@@ -60,6 +68,7 @@ class RecentlyAddedExpensesTests(TestCase):
 
 	def test_lend_can_be_edited_and_deleted(self):
 		lend = Lend.objects.create(
+			user=self.user,
 			name='Old lender',
 			amount=Decimal('100.00'),
 			lend_date=date(2026, 9, 20),
@@ -88,6 +97,7 @@ class RecentlyAddedExpensesTests(TestCase):
 
 	def test_borrow_can_be_edited_and_deleted(self):
 		borrow = Borrow.objects.create(
+			user=self.user,
 			name='Old borrower',
 			amount=Decimal('80.00'),
 			borrow_date=date(2026, 9, 20),
@@ -122,6 +132,7 @@ class RecentlyAddedExpensesTests(TestCase):
 
 	def test_home_dashboard_summarizes_expenses_and_links_tabs(self):
 		Item.objects.create(
+			user=self.user,
 			name='Dashboard grocery',
 			price=Decimal('25.50'),
 			quantity=2,
@@ -174,12 +185,14 @@ class RecentlyAddedExpensesTests(TestCase):
 
 	def test_add_page_shows_items_created_within_last_24_hours(self):
 		recent_item = Item.objects.create(
+			user=self.user,
 			name='Recent historical expense',
 			price=Decimal('12.50'),
 			quantity=1,
 			date=date.today() - timedelta(days=3),
 		)
 		old_item = Item.objects.create(
+			user=self.user,
 			name='Old expense',
 			price=Decimal('8.00'),
 			quantity=1,

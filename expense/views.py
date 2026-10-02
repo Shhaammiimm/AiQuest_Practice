@@ -10,8 +10,9 @@ from django.utils import timezone
 from .models import Borrow, Item, Lend
 from .forms import ItemForm, LendForm, BorrowForm
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
 
-
+@login_required
 def home_page(request):
     today = timezone.localdate()
     month_start = today.replace(day=1)
@@ -20,7 +21,7 @@ def home_page(request):
         F('price') * F('quantity'),
         output_field=DecimalField(max_digits=18, decimal_places=2),
     )
-    items = Item.objects.annotate(line_total=line_total)
+    items = Item.objects.filter(user=request.user).annotate(line_total=line_total)
 
     month_items = items.filter(date__range=(month_start, today))
     year_items = items.filter(date__range=(year_start, today))
@@ -73,7 +74,6 @@ def home_page(request):
         'recent_items': items.order_by('-date', '-created_at')[:6],
     })
 
-
 def serialize_item(item):
     return {
         'id': item.id,
@@ -86,12 +86,14 @@ def serialize_item(item):
         'total': float(item.total),
     }
 
-
+@login_required
 def add_item(request):
     if request.method == 'POST':
         form = ItemForm(request.POST)
         if form.is_valid():
-            item = form.save()
+            item = form.save(commit=False)
+            item.user = request.user
+            item.save()
             is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
             if is_ajax:
                 return JsonResponse({
@@ -104,6 +106,7 @@ def add_item(request):
     else:
         form = ItemForm()
     recent_items = Item.objects.filter(
+        user=request.user,
         created_at__gte=timezone.now() - timedelta(hours=24)
     ).order_by('-created_at')
 
@@ -113,6 +116,7 @@ def add_item(request):
         'recent_items_data': [serialize_item(item) for item in recent_items],
     })
 
+
 def edit_item(request, item_id):
 
     if request.method != 'POST':
@@ -121,7 +125,7 @@ def edit_item(request, item_id):
             'message': 'Invalid request method.'
         }, status=405)
 
-    item = get_object_or_404(Item, id=item_id)
+    item = get_object_or_404(Item, id=item_id, user=request.user)
 
     form = ItemForm(
         request.POST,
@@ -144,6 +148,7 @@ def edit_item(request, item_id):
         'errors': form.errors
     }, status=400)
 
+
 def delete_item(request, item_id):
 
     if request.method != 'POST':
@@ -152,7 +157,7 @@ def delete_item(request, item_id):
             'message': 'Invalid request method.'
         }, status=405)
 
-    item = get_object_or_404(Item, id=item_id)
+    item = get_object_or_404(Item, id=item_id, user=request.user)
 
     item.delete()
 
@@ -173,7 +178,7 @@ def monthly_summary_api(request):
 
     items_qs = (
         Item.objects
-        .filter(date__year=year, date__month=month)
+        .filter(user=request.user, date__year=year, date__month=month)
         .annotate(line_total=ExpressionWrapper(F('price') * F('quantity'), output_field=DecimalField()))
         .values('date')
         .annotate(total=Sum('line_total'), count=Count('id'))
@@ -198,6 +203,7 @@ def monthly_summary_api(request):
 def day_detail_api(request, year, month, day):
 
     items = Item.objects.filter(
+        user=request.user,
         date__year=year,
         date__month=month,
         date__day=day
@@ -220,11 +226,14 @@ def day_detail_api(request, year, month, day):
     return JsonResponse(data, safe=False)
 
 
+@login_required
 def add_lend(request):
     if request.method == 'POST':
         form = LendForm(request.POST)
         if form.is_valid():
-            lend = form.save()
+            lend = form.save(commit=False)
+            lend.user = request.user
+            lend.save()
             is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
             if is_ajax:
                 return JsonResponse({
@@ -246,8 +255,9 @@ def add_lend(request):
     return render(request, 'expense/add.html', {'form': form})
 
 
+@login_required
 def lend_list_page(request):
-    lends = Lend.objects.all()
+    lends = Lend.objects.filter(user=request.user)
     total_lend_amount = lends.aggregate(total=Sum('amount'))['total'] or 0
     return render(request, 'expense/lend_list.html', {
         'lends': lends,
@@ -256,7 +266,7 @@ def lend_list_page(request):
 
 
 def edit_lend(request, lend_id):
-    lend = get_object_or_404(Lend, pk=lend_id)
+    lend = get_object_or_404(Lend, pk=lend_id, user=request.user)
     if request.method == 'POST':
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         form = LendForm(request.POST, instance=lend)
@@ -285,17 +295,20 @@ def edit_lend(request, lend_id):
 
 @require_POST
 def delete_lend(request, lend_id):
-    lend = get_object_or_404(Lend, pk=lend_id)
+    lend = get_object_or_404(Lend, pk=lend_id, user=request.user)
     lend.delete()
     messages.success(request, 'Lend record deleted successfully!')
     return redirect('expense:lend_list')
 
-
+    
+@login_required     
 def add_borrow(request):
     if request.method == 'POST':
         form = BorrowForm(request.POST)
         if form.is_valid():
-            borrow = form.save()
+            borrow = form.save(commit=False)
+            borrow.user = request.user
+            borrow.save()
             is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
             if is_ajax:
                 return JsonResponse({
@@ -316,8 +329,9 @@ def add_borrow(request):
         form = BorrowForm()
     return render(request, 'expense/add_borrow.html', {'form': form})
 
+@login_required
 def borrow_list_page(request):
-    borrows = Borrow.objects.all()
+    borrows = Borrow.objects.filter(user=request.user)
     total_borrow_amount = borrows.aggregate(total=Sum('amount'))['total'] or 0
     return render(request, 'expense/borrow_list.html', {
         'borrows': borrows,
@@ -326,7 +340,7 @@ def borrow_list_page(request):
 
 
 def edit_borrow(request, borrow_id):
-    borrow = get_object_or_404(Borrow, pk=borrow_id)
+    borrow = get_object_or_404(Borrow, pk=borrow_id, user=request.user)
     if request.method == 'POST':
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         form = BorrowForm(request.POST, instance=borrow)
@@ -355,7 +369,7 @@ def edit_borrow(request, borrow_id):
 
 @require_POST
 def delete_borrow(request, borrow_id):
-    borrow = get_object_or_404(Borrow, pk=borrow_id)
+    borrow = get_object_or_404(Borrow, pk=borrow_id, user=request.user)
     borrow.delete()
     messages.success(request, 'Borrow record deleted successfully!')
     return redirect('expense:borrow_list')

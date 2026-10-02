@@ -16,9 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+
+from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('machine/', include('machine_learning.urls')),
     path('deep/', include('deep_learning.urls')),
-    path('expense/', include('expense.urls'))
+    path('expense/', include('expense.urls')),
+    path('accounts/', include('accounts.urls')),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

@@ -1,7 +1,14 @@
 from django.db import models
 import datetime
 
+from django.conf import settings
+
 class Item(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
     name = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.DecimalField(max_digits=8, decimal_places=2, default=1, blank=True)
@@ -28,6 +35,11 @@ class Item(models.Model):
 
 
 class Lend(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='lends'
+    )
     name = models.CharField(max_length=200)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     lend_date = models.DateField(default=datetime.date.today, blank=True)
@@ -47,6 +59,11 @@ class Lend(models.Model):
     
 
 class Borrow(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='borrows'
+    )
     name = models.CharField(max_length=200)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     borrow_date = models.DateField(default=datetime.date.today, blank=True)
